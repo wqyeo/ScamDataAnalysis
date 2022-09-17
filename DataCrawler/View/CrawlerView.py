@@ -10,6 +10,8 @@ _CRAWL_SITE_OPTIONS = [
 #region NOTE: Keys
 TARGET_CRAWL_SITE_KEY = "TARGET_CRAWL_SITE_KEY"
 SAVE_FOLDER_KEY = "SAVE_FOLDER_KEY"
+
+CRAWLER_USER_LOG_MESSAGE = "CRAWLER_USER_LOG_MESSAGE"
 #endregion
 
 #region NOTE: Events (Button names, etc)
@@ -29,5 +31,6 @@ def CreateCrawlerViewLayout():
         _CRAWL_SITE_SELECTOR,
         [sg.Column(_SAVE_DESTINATION_SELECTION)],
         [sg.HorizontalSeparator()],
+        [sg.Text("", key=CRAWLER_USER_LOG_MESSAGE)],
         [sg.Button(START_CRAWL)]
     ]

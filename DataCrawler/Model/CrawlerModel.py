@@ -1,4 +1,6 @@
 import os
+import json
+import ast
 
 from Core.Crawler import Crawler
 from Core.Database import Database
@@ -8,6 +10,7 @@ class CrawlerModel:
         self.viewModelRef = viewModelRef
         pass
 
+    # TODO: Refactor
     def CrawlAndSaveData(self, saveLocation: str, recursiveTimes: int):
         """
         Parameters
@@ -33,20 +36,63 @@ class CrawlerModel:
             "scamType": "",
             "year": "",
             "month": "",
-            "page": "2",
+            "page": "1",
             "sortBy": "Latest"
         }
 
-        noisePattern = [
-            "u0026hellip",
-            "\\",
-            "u0027"
-        ]
+        jsonData = json.loads('{"Stories": []}')
 
-        crawler = Crawler(crawlSite, crawlSiteData, noisePattern)
-        content = crawler.Crawl()
+        # Recursively crawl and fetch raw content (string)
+        for pageNo in range(recursiveTimes):
+            crawlSiteData["page"] = str(pageNo)
+            contentRaw = self.Crawl(crawlSite, crawlSiteData)
 
+            # Try to get the raw contents as an array.
+            contentArray = None
+            try:
+                contentArray = self.GetContentList(contentRaw, "StoryList")
+            except:
+                # TODO: Proper logging.
+                print("Error fetching data at page: " + str(pageNo))
+                continue
+
+            for content in contentArray:
+                # Try to read each content as JSON.
+                try:
+                    tempJson = json.loads(content)
+                except:
+                    print("Error converting one of the data at page " + str(pageNo) + " to JSON Data.")
+                    continue
+
+                jsonData["Stories"].append(tempJson)
+
+        # TODO: Proper generation for file-name rather than 'debug.json'
         saveLocation = saveLocation + "/debug.json"
-        Database.SaveData(content, saveLocation)
+        Database.SaveJsonData(jsonData, saveLocation)
 
         self.viewModelRef.ShowUserMessage("Successfully saved under " + saveLocation)
+
+    def Crawl(self, site: str, data: object) -> str:
+        crawler = Crawler(site, data, CrawlerModel.RemoveNoiseFromContent)
+        return crawler.Crawl()
+
+    def GetContentList(self, content:str, contentKey:str):
+        # Get whatever is in '[]' after the contentKey
+        content = content[content.index(contentKey):]
+        content = content[content.index("[")+1:]
+        content = content[:content.index("]")]
+
+        # Split the string by each '{}'
+        content = content.replace("},", "ia2sd3")
+        contentArray = content.split("ia2sd3")
+        for i in range(0,len(contentArray) - 2, 1):
+            contentArray[i] += "}"
+
+        return contentArray
+
+    def RemoveNoiseFromContent(content: str) -> str:
+        content = content.replace("\\u0026", "&")
+        content = content.replace("\\u0027", "'")
+        content = content.replace("\\xa0\\", " ")
+        
+        return content

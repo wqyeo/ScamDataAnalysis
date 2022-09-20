@@ -8,7 +8,16 @@ class CrawlerModel:
         self.viewModelRef = viewModelRef
         pass
 
-    def CrawlAndSaveData(self, saveLocation: str):
+    def CrawlAndSaveData(self, saveLocation: str, recursiveTimes: int):
+        """
+        Parameters
+        ------------------------------------------
+        ### Save Location
+        The target folder where the user want to save the data in.
+
+        ### Recursive Times
+        How many pages it will crawl through
+        """
         if not saveLocation.strip():
             self.viewModelRef.ShowUserMessage("Folder Path should not be empty!")
             return None
@@ -19,7 +28,7 @@ class CrawlerModel:
         # TODO: Reformat
         # These constants should be dynamic and loaded from somewhere
         # based on the requested site to crawl.
-        crawlSite = "https://www.scamalert.sg/stories/GetStoryListAjax/get?scamType=&year=&month=&page=1&sortBy=Latest"
+        crawlSite = "https://www.scamalert.sg/stories/GetStoryListAjax/"
         crawlSiteData = {
             "scamType": "",
             "year": "",

@@ -17,6 +17,8 @@ class CrawlerViewModel:
 
     def StartCrawl(self, window) -> None:
         filePath = window[SAVE_FOLDER_KEY].get()
+        recursiveNum = window[RECURSIVE_CRAWL_TIMES_KEY]
+
         self.model.CrawlAndSaveData(filePath)
 
     def ShowUserMessage(self, message) -> None:
@@ -24,4 +26,4 @@ class CrawlerViewModel:
         Show a message to the user.
         (Commonly used to show error or log.)
         """
-        self.appRef.window[CRAWLER_USER_LOG_MESSAGE].update(message)
+        self.appRef.window[CRAWLER_USER_LOG_KEY].update(message)

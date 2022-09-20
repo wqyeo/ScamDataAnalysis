@@ -1,7 +1,7 @@
-from DataCrawler.ViewModel.CrawlerViewModel import CrawlerViewModel
 import PySimpleGUI as sg
 
 from DataCrawler.View.CrawlerView import *
+from DataCrawler.ViewModel.CrawlerViewModel import CrawlerViewModel
 
 class DataCrawlerApp:
     def __init__(self) -> None:

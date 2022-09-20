@@ -10,8 +10,9 @@ _CRAWL_SITE_OPTIONS = [
 #region NOTE: Keys
 TARGET_CRAWL_SITE_KEY = "TARGET_CRAWL_SITE_KEY"
 SAVE_FOLDER_KEY = "SAVE_FOLDER_KEY"
+RECURSIVE_CRAWL_TIMES_KEY = "RECURSIVE_CRAWL_TIMES_KEY"
 
-CRAWLER_USER_LOG_MESSAGE = "CRAWLER_USER_LOG_MESSAGE"
+CRAWLER_USER_LOG_KEY = "CRAWLER_USER_LOG_MESSAGE"
 #endregion
 
 #region NOTE: Events (Button names, etc)
@@ -20,7 +21,10 @@ START_CRAWL = "Crawl!"
 
 def CreateCrawlerViewLayout():
     # NOTE: Minor layouts to be merged together to form the full layout
-    _CRAWL_SITE_SELECTOR = [sg.Text("Select Site to Crawl: "), sg.Combo(_CRAWL_SITE_OPTIONS, key= TARGET_CRAWL_SITE_KEY, readonly= True, default_value=_CRAWL_SITE_OPTIONS[0])]
+    _CRAWL_SITE_SELECTOR = [sg.Text("Select Site to Crawl: "), sg.Combo(_CRAWL_SITE_OPTIONS, key= TARGET_CRAWL_SITE_KEY, readonly= True, default_value=_CRAWL_SITE_OPTIONS[0])],
+
+    _RECURSIVE_CRAWL_SELECTOR = [sg.Text('No of pages to crawl through: '), sg.Spin([i for i in range(1,101)], initial_value=100, key=RECURSIVE_CRAWL_TIMES_KEY, readonly=True)]
+
     _SAVE_DESTINATION_SELECTION =[
         [sg.Text("Target Folder (data will be saved here): ")],
         [sg.In(key=SAVE_FOLDER_KEY, readonly=True)],
@@ -29,8 +33,9 @@ def CreateCrawlerViewLayout():
 
     return [
         _CRAWL_SITE_SELECTOR,
+        _RECURSIVE_CRAWL_SELECTOR,
         [sg.Column(_SAVE_DESTINATION_SELECTION)],
         [sg.HorizontalSeparator()],
-        [sg.Text("", key=CRAWLER_USER_LOG_MESSAGE)],
+        [sg.Text("", key=CRAWLER_USER_LOG_KEY)],
         [sg.Button(START_CRAWL)]
     ]

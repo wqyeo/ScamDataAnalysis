@@ -2,7 +2,7 @@ import json
 import requests
 
 class Crawler:
-    def __init__(self, site, data = None, noiseStr = []) -> None:
+    def __init__(self, site, data = None, noisePattern=None) -> None:
         """
         Create an Object for crawling data with specific params.
 
@@ -15,12 +15,12 @@ class Crawler:
         ### data: object
         Additional data to send on the site when doing HTTP request.
 
-        ### noiseStr: string[]
-        Remove all text from content that matches with this noise string list.
+        ### noisePattern: function(str)
+        Function to remove noise from content string
         """
         self.site = site
         self.data = data
-        self.noiseStr = noiseStr
+        self.noisePattern = noisePattern
         pass
 
     def Crawl(self) -> str:
@@ -33,14 +33,9 @@ class Crawler:
 
         request = requests.post(self.site, data=self.data)
         reqContent = self._GetContentFromRequest(request)
-        reqContent = self._FilterOutNoise(reqContent)
+        reqContent = self.noisePattern(reqContent)
 
         return reqContent
-
-    def _FilterOutNoise(self, content: str) -> str:
-        for noisePattern in self.noiseStr:
-            content = content.replace(noisePattern, "")
-        return content
 
     def _GetContentFromRequest(self, request: requests.Response) -> str:
         jsonObject = json.loads(request.text)

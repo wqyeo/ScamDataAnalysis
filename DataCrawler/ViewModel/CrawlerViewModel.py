@@ -1,6 +1,7 @@
 import PySimpleGUI as sg
-from DataCrawler.Model.CrawlerModel import CrawlerModel
+
 from DataCrawler.View.CrawlerView import *
+from DataCrawler.Model.CrawlerModel import CrawlerModel
 
 class CrawlerViewModel:
     def __init__(self, appRef) -> None:
@@ -17,11 +18,13 @@ class CrawlerViewModel:
 
     def StartCrawl(self, window) -> None:
         filePath = window[SAVE_FOLDER_KEY].get()
-        self.model.CrawlAndSaveData(filePath)
+        recursiveNum = window[RECURSIVE_CRAWL_TIMES_KEY].get()
+
+        self.model.CrawlAndSaveData(filePath, recursiveNum)
 
     def ShowUserMessage(self, message) -> None:
         """
         Show a message to the user.
         (Commonly used to show error or log.)
         """
-        self.appRef.window[CRAWLER_USER_LOG_MESSAGE].update(message)
+        self.appRef.window[CRAWLER_USER_LOG_KEY].update(message)

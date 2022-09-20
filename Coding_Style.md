@@ -94,4 +94,4 @@ Use `#NOTE:` for longer comment explaining certain functionalities.
 2. Installed libraries (installed by requirements.txt)
 3. Project imports
 
-Within each section, sort alphabetically.
+Within each section, try to sort by length. Shortest naming import to longest naming imports.

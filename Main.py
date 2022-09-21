@@ -1,8 +1,10 @@
+from asyncio import AbstractEventLoop
 import PySimpleGUI as sg
 
+from Core.Async.AsyncThread import *
 from DataCrawler.DataCrawlerApp import DataCrawlerApp
 
-def CreateMainWindow():
+def _CreateMainWindow():
     WINDOW_TITLE = "Scam Data Analysis"
     WINDOW_MARGIN = (50, 25)
     WINDOW_LAYOUT = [
@@ -13,26 +15,26 @@ def CreateMainWindow():
 
     return sg.Window(title= WINDOW_TITLE, layout = WINDOW_LAYOUT, margins= WINDOW_MARGIN)
 
-def RunMainWindow() -> None:
-    appWindow = CreateMainWindow()
+def _RunMainWindow(mainThread: Thread, mainAsyncLoop: AbstractEventLoop) -> None:
+    appWindow = _CreateMainWindow()
 
     while True:
         event, value = appWindow.read()
         if event == sg.WINDOW_CLOSED:
             break
         elif event == "Crawler":
-            # TODO: Open crawler
             appWindow.close()
-            RunApplication(DataCrawlerApp())
-            appWindow = CreateMainWindow()
+            _RunApplication(DataCrawlerApp(mainAsyncLoop))
+            appWindow = _CreateMainWindow()
         elif event == "Anaylzer":
             appWindow["Error_MSG"].update("Analyzer Not Implemented yet")
             pass
 
     appWindow.close()
 
-def RunApplication(app) -> None:
+def _RunApplication(app) -> None:
     while app.isOpen:
         app.Update()
 
-RunMainWindow()
+_mainAsyncThread = StartAsyncLoop()
+_RunMainWindow(_mainAsyncThread[0], _mainAsyncThread[1])

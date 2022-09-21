@@ -13,6 +13,7 @@ SAVE_FOLDER_KEY = "SAVE_FOLDER_KEY"
 RECURSIVE_CRAWL_TIMES_KEY = "RECURSIVE_CRAWL_TIMES_KEY"
 
 CRAWLER_USER_LOG_KEY = "CRAWLER_USER_LOG_MESSAGE"
+LOADING_BAR_KEY = "LOADING_BAR_KEY"
 #endregion
 
 #region NOTE: Events (Button names, etc)
@@ -37,5 +38,6 @@ def CreateCrawlerViewLayout():
         [sg.Column(_SAVE_DESTINATION_SELECTION)],
         [sg.HorizontalSeparator()],
         [sg.Text("", key=CRAWLER_USER_LOG_KEY)],
-        [sg.Button(START_CRAWL)]
+        [sg.Button(START_CRAWL)],
+        [sg.ProgressBar(max_value= 100,  key = LOADING_BAR_KEY, orientation="h", size=(20, 20))]
     ]

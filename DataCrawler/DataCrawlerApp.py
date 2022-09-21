@@ -4,10 +4,11 @@ from DataCrawler.View.CrawlerView import *
 from DataCrawler.ViewModel.CrawlerViewModel import CrawlerViewModel
 
 class DataCrawlerApp:
-    def __init__(self) -> None:
+    def __init__(self, mainAsyncLoop) -> None:
         self.window = sg.Window(title = "Data Crawler", layout= CreateCrawlerViewLayout(), margins=(50, 20))
         self.isOpen = True
         self.currViewModel = CrawlerViewModel(self)
+        self.asyncLoop = mainAsyncLoop
         pass
 
     def Update(self) -> None:

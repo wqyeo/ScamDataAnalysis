@@ -1,3 +1,4 @@
+import asyncio
 import os
 import json
 import ast
@@ -10,8 +11,8 @@ class CrawlerModel:
         self.viewModelRef = viewModelRef
         pass
 
-    # TODO: Refactor
-    def CrawlAndSaveData(self, saveLocation: str, recursiveTimes: int):
+    @asyncio.coroutine
+    def CrawlAndSaveData(self, saveLocation: str, recursiveTimes: int, taskThread: None):
         """
         Parameters
         ------------------------------------------
@@ -20,6 +21,10 @@ class CrawlerModel:
 
         ### Recursive Times
         How many pages it will crawl through
+
+        ### Task Thread
+        Check Core.Async.TaskThread. Only use it when calling this as a thread.
+
         """
         if not saveLocation.strip():
             self.viewModelRef.ShowUserMessage("Folder Path should not be empty!")
@@ -44,6 +49,8 @@ class CrawlerModel:
 
         # Recursively crawl and fetch raw content (string)
         for pageNo in range(recursiveTimes):
+            self.viewModelRef.UpdateLoadingBar((pageNo / recursiveTimes) * 100)
+
             crawlSiteData["page"] = str(pageNo)
             contentRaw = self.Crawl(crawlSite, crawlSiteData)
 
@@ -71,6 +78,9 @@ class CrawlerModel:
         Database.SaveJsonData(jsonData, saveLocation)
 
         self.viewModelRef.ShowUserMessage("Successfully saved under " + saveLocation)
+        self.viewModelRef.UpdateLoadingBar(100)
+        if taskThread != None:
+            taskThread.isRunning = False
 
     def Crawl(self, site: str, data: object) -> str:
         crawler = Crawler(site, data, CrawlerModel.RemoveNoiseFromContent)

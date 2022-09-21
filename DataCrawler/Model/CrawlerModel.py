@@ -1,8 +1,8 @@
 import asyncio
 import os
 import json
-import ast
 
+from Core.Logging.Logger import *
 from Core.Crawler import Crawler
 from Core.Database import Database
 
@@ -59,8 +59,9 @@ class CrawlerModel:
             try:
                 contentArray = self.GetContentList(contentRaw, "StoryList")
             except:
-                # TODO: Proper logging.
-                print("Error fetching data at page: " + str(pageNo))
+                infoFileName = DumpInfo(contentRaw)
+                message = "Error Fetching data at page: {pageNo}. More info at {fileName}.".format(pageNo=pageNo, fileName=infoFileName)
+                Log("Page Fetch Data Error", message, LogSeverity.ERROR)
                 continue
 
             for content in contentArray:
@@ -68,7 +69,9 @@ class CrawlerModel:
                 try:
                     tempJson = json.loads(content)
                 except:
-                    print("Error converting one of the data at page " + str(pageNo) + " to JSON Data.")
+                    infoFileName = DumpInfo(content)
+                    message = "Error Converting one data to JSON at page: {pageNo}. More info at {fileName}.".format(pageNo=pageNo, fileName=infoFileName)
+                    Log("Data Convert Error", message, LogSeverity.ERROR)
                     continue
 
                 jsonData["Stories"].append(tempJson)

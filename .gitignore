@@ -131,3 +131,5 @@ dmypy.json
 # Log dump
 *.info
 LogDump/
+
+.idea/**

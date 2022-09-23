@@ -20,9 +20,9 @@ It should install all the required external modules.<br>
 
 ### Run the Application
 
-Run `main.py`:
+Run `Main.py`:
 ```
-python main.py
+python Main.py
 ```
 
 ## Coding style

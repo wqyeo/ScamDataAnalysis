@@ -1,11 +1,12 @@
 import PySimpleGUI as sg
 
 from DataCrawler.View.CrawlerView import *
+from DataCrawler.View.DeepCrawlerView import *
 from DataCrawler.ViewModel.CrawlerViewModel import CrawlerViewModel
 
 class DataCrawlerApp:
     def __init__(self, mainAsyncLoop) -> None:
-        self.window = sg.Window(title = "Data Crawler", layout= CreateCrawlerViewLayout(), margins=(50, 20))
+        self.window = sg.Window(title = "Data Crawler", layout= APP_VIEW, margins=(0, 0))
         self.isOpen = True
         self.currViewModel = CrawlerViewModel(self)
         self.asyncLoop = mainAsyncLoop
@@ -16,3 +17,15 @@ class DataCrawlerApp:
 
     def CloseApp(self):
         self.isOpen = False
+
+# NOTE: App View
+APP_TAB_GROUP = sg.TabGroup(
+    [[
+        sg.Tab("Site", CreateCrawlerViewLayout()),
+        sg.Tab("Deep", CreateDeepCrawlerViewLayout())
+    ]]
+)
+
+APP_VIEW = [
+    [APP_TAB_GROUP]
+]

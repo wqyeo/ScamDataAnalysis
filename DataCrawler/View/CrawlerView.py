@@ -17,7 +17,7 @@ LOADING_BAR_KEY = "LOADING_BAR_KEY"
 #endregion
 
 #region NOTE: Events (Button names, etc)
-START_CRAWL = "Crawl!"
+START_CRAWL = "Crawl Site"
 #endregion 
 
 def CreateCrawlerViewLayout():

@@ -15,9 +15,9 @@ START_CRAWL = "Deep Crawl"
 def CreateDeepCrawlerViewLayout():
 
     _CRAWL_DATA_SELECTION =[
-        [sg.Text("Target Folder (data will be saved here): ")],
+        [sg.Text("Target JSON Data File\n(Data will be saved in the same location): ")],
         [sg.In(key=TARGET_CRAWL_DATA_KEY, readonly=True)],
-        [sg.FolderBrowse(target=TARGET_CRAWL_DATA_KEY)]
+        [sg.FileBrowse(target=TARGET_CRAWL_DATA_KEY, file_types=(("JSON files", "*.json"),))]
     ]
 
     return [

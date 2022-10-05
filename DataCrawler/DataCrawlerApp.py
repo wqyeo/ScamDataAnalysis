@@ -7,7 +7,7 @@ from DataCrawler.ViewModel.DeepCrawlerViewModel import DeepCrawlerViewModel
 
 class DataCrawlerApp:
     def __init__(self, mainAsyncLoop) -> None:
-        self.window = sg.Window(title = "Data Crawler", layout= APP_VIEW, margins=(0, 0))
+        self.window = sg.Window(title = "Data Crawler", layout= DataCrawlerApp.CreateLayout(), margins=(0, 0))
         self.isOpen = True
         self.viewModels = [
             CrawlerViewModel(self),
@@ -25,14 +25,15 @@ class DataCrawlerApp:
     def CloseApp(self):
         self.isOpen = False
 
-# NOTE: App View
-APP_TAB_GROUP = sg.TabGroup(
-    [[
-        sg.Tab("Site", CreateCrawlerViewLayout()),
-        sg.Tab("Deep", CreateDeepCrawlerViewLayout())
-    ]]
-)
+    def CreateLayout():
+        # NOTE: App View
+        APP_TAB_GROUP = sg.TabGroup(
+            [[
+                sg.Tab("Site", CreateCrawlerViewLayout()),
+                sg.Tab("Deep", CreateDeepCrawlerViewLayout())
+            ]]
+        )
 
-APP_VIEW = [
-    [APP_TAB_GROUP]
-]
+        return [
+            [APP_TAB_GROUP]
+        ]

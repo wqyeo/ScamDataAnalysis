@@ -4,7 +4,7 @@ import os
 import json
 
 from Core.Logging.Logger import *
-from Core.Crawler import Crawler
+from Core.Crawling.Crawler import Crawler
 from Core.Database import Database
 
 from Core.WebScraping.HTML.HTMLScraper import *

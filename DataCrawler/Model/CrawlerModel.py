@@ -1,9 +1,10 @@
 import asyncio
 import os
 import json
+from Core.Crawling.CrawlTarget import CrawlTarget
 
 from Core.Logging.Logger import *
-from Core.Crawler import Crawler
+from Core.Crawling.Crawler import Crawler
 from Core.Database import Database
 
 class CrawlerModel:
@@ -43,14 +44,11 @@ class CrawlerModel:
         # TODO: Reformat
         # These constants should be dynamic and loaded from somewhere
         # based on the requested site to crawl.
-        crawlSite = "https://www.scamalert.sg/stories/GetStoryListAjax/"
-        crawlSiteData = {
-            "scamType": "",
-            "year": "",
-            "month": "",
-            "page": "1",
-            "sortBy": "Latest"
-        }
+
+        crawlConfig = Crawler.LoadConfig(CrawlTarget.SCAM_ALERT_STORIES)
+
+        crawlSite = crawlConfig["Site"]
+        crawlSiteHeaders = crawlConfig["Headers"]
 
         jsonData = json.loads('{"Stories": []}')
 
@@ -58,8 +56,8 @@ class CrawlerModel:
         for pageNo in range(recursiveTimes):
             self.viewModelRef.UpdateLoadingBar((pageNo / recursiveTimes) * 100)
 
-            crawlSiteData["page"] = str(pageNo)
-            contentRaw = self.Crawl(crawlSite, crawlSiteData)
+            crawlSiteHeaders["page"] = str(pageNo)
+            contentRaw = self.Crawl(crawlSite, crawlSiteHeaders)
 
             # Try to get the raw contents as an array.
             contentArray = None

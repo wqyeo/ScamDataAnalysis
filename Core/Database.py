@@ -5,7 +5,7 @@ class Database:
         f = open(filePath, 'r', encoding='utf-8-sig')
         data = json.load(f);
         f.close()
-        return data;
+        return data
 
     def SaveStringData(content: str, savePath: str) -> None:
         with open(savePath, 'w') as f:

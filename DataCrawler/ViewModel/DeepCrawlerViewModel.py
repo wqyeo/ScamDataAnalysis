@@ -3,13 +3,15 @@ import asyncio
 import PySimpleGUI as sg
 
 from Core.Async.TaskThread import TaskThread
-from DataCrawler.View.CrawlerView import *
-from DataCrawler.Model.CrawlerModel import CrawlerModel
+from DataCrawler.View.DeepCrawlerView import *
+from DataCrawler.Model.DeepCrawlerModel import *
 
-class CrawlerViewModel:
+class DeepCrawlerViewModel:
     def __init__(self, appRef) -> None:
         self.appRef = appRef
-        self.model = CrawlerModel(self)
+
+        # TODO: Model
+        self.model = DeepCrawlerModel(self)
         self.currThread = None
         pass
 
@@ -18,17 +20,17 @@ class CrawlerViewModel:
         if event == sg.WINDOW_CLOSED:
             self.appRef.CloseApp()
         elif event == START_CRAWL:
-            self.StartCrawl(window)
+            self.StartCrawl(window) 
 
     def StartCrawl(self, window) -> None:
         if self.IsCurrTaskRunning():
             return
 
-        filePath = window[SAVE_FOLDER_KEY].get()
-        recursiveNum = window[RECURSIVE_CRAWL_TIMES_KEY].get()
-
-        self.currThread = TaskThread("Crawl and Save")
-        asyncio.run_coroutine_threadsafe(self.model.CrawlAndSaveData(filePath, recursiveNum, self.currThread), self.appRef.asyncLoop)
+        filePath = window[TARGET_CRAWL_DATA_KEY].get()
+        
+        self.currThread = TaskThread("Deep Crawl and Save")
+        asyncio.run_coroutine_threadsafe(self.model.CrawlAndSaveData(filePath, self.currThread), self.appRef.asyncLoop)
+        print("Deep Crawl Triggered")
 
     def ShowUserMessage(self, message) -> None:
         """

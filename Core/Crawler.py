@@ -33,7 +33,8 @@ class Crawler:
 
         request = requests.post(self.site, data=self.data)
         reqContent = self._GetContentFromRequest(request)
-        reqContent = self.noisePattern(reqContent)
+        if not self.noisePattern == None:
+            reqContent = self.noisePattern(reqContent)
 
         return reqContent
 

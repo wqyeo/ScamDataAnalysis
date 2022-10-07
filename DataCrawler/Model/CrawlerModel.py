@@ -26,11 +26,18 @@ class CrawlerModel:
         Check Core.Async.TaskThread. Only use it when calling this as a thread.
 
         """
+        invalidArgs = False
         if not saveLocation.strip():
             self.viewModelRef.ShowUserMessage("Folder Path should not be empty!")
-            return None
+            invalidArgs = True
         if not os.path.isdir(saveLocation):
             self.viewModelRef.ShowUserMessage("Path to folder does not exists!")
+            invalidArgs = True
+
+
+        if invalidArgs:
+            if not taskThread == None:
+                taskThread.isRunning = False
             return None
 
         # TODO: Reformat

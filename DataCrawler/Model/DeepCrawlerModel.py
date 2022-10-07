@@ -83,17 +83,16 @@ class DeepCrawlerModel:
             content = scraper.Scrap()
             if content == None:
                 continue
-
-            jsonContent = None
+            
             try:
-                jsonContent = json.dumps(content)
+                jsonData["DetailedStories"].append(content)
             except:
                 infoFileName = DumpInfo(content, LogSeverity.ERROR)
                 message = "Error Converting one of scrapped data to JSON. More details at {}".format(infoFileName)
                 Log("JSON Data Conver Error {}".format(data["Title"]), message, LogSeverity.ERROR)
                 continue
 
-            jsonData["DetailedStories"].append(jsonContent)
+            progress += 1
 
         # File name should be similar as target data.
         originalFileName = os.path.basename(targetDataPath).split('/')[-1]

@@ -4,7 +4,7 @@ from Core.Util import *
 from Core.WebScraping.HTML.WebContent import WebContent
 
 class HTMLScraper:
-    def __init__(self, htmlContent: str, webContents: list) -> None:
+    def __init__(self, htmlContent: str, webContents: list, contentIsSoup: bool = False) -> None:
         """
         Create a HTML Scraper to scrap through certain content based on 'WebContent' objects.
 
@@ -16,8 +16,10 @@ class HTMLScraper:
         **webContents**
         A list of 'WebContent'.
         """
-        print(htmlContent)
-        self.soup = BeautifulSoup(htmlContent, "html.parser")
+        if contentIsSoup:
+            self.soup = htmlContent
+        else:
+            self.soup = BeautifulSoup(htmlContent, "html.parser")
         self.webContents = webContents
         pass
 
@@ -54,7 +56,7 @@ class HTMLScraper:
             # If this webcontent has inner.
             if webContent.innerContents != None:
                 # Recursively scrap through each inner content
-                innerScraper = HTMLScraper(content, webContent.innerContents)
+                innerScraper = HTMLScraper(content, webContent.innerContents, True)
                 scrapped = innerScraper.Scrap()
                 # Append if the inner has content.
                 if scrapped != None:
@@ -64,10 +66,11 @@ class HTMLScraper:
                 
             # Append this webcontent if its not empty.
             if not IsEmptyOrWhitespace(content.text):
+                contentText = self._Clean(content.text)
                 if hasInner:
-                    toAppend["TextContent"] = content.text
+                    toAppend["TextContent"] = contentText
                 else:
-                    toAppend = content.text
+                    toAppend = contentText
             
             # Append to result if this content is not empty.
             if toAppend != None or not toAppend:
@@ -85,6 +88,12 @@ class HTMLScraper:
         else:
             return None
 
+    def _Clean(self, content:str) -> str:
+        # TODO: Load from config or smth
+        content = content.replace('"', "'")
+        content = content.strip().replace("\n", "").replace("\r", "")
+        content = content.replace("\\", "")
+        return content
 
     def _FindAll(self, webContent: WebContent) -> list:
         if webContent.class_ == None:

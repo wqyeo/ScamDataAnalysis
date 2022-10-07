@@ -59,5 +59,4 @@ class Crawler:
             filePath = os.path.join(configPath, "ScamAlertStories.json")
             return Database.OpenJsonData(filePath)
         else:
-            # TODO: Error or something
-            pass
+            return None

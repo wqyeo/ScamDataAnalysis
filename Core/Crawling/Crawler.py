@@ -1,5 +1,9 @@
 import json
+import os
 import requests
+
+from Core.Crawling.CrawlTarget import *
+from Core.Database import Database
 
 class Crawler:
     def __init__(self, site, data = None, noisePattern=None) -> None:
@@ -48,3 +52,11 @@ class Crawler:
     def _GetContentFromRequest(self, request: requests.Response) -> str:
         jsonObject = json.loads(request.text)
         return jsonObject["result"]
+
+    def LoadConfig(crawlTarget: CrawlTarget) -> dict:
+        configPath = os.path.join("Core", "Crawling", "Configs")
+        if crawlTarget == CrawlTarget.SCAM_ALERT_STORIES:
+            filePath = os.path.join(configPath, "ScamAlertStories.json")
+            return Database.OpenJsonData(filePath)
+        else:
+            return None

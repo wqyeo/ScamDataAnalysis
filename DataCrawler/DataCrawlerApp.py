@@ -17,10 +17,11 @@ class DataCrawlerApp:
         pass
 
     def Update(self) -> None:
+        event, value = self.window.read()
         # TODO: See if it possible to update the respective view-model
         # based on the current viewed Tab.
         for viewModel in self.viewModels:
-            viewModel.Update(self.window)
+            viewModel.Update(event, value)
 
     def CloseApp(self):
         self.isOpen = False

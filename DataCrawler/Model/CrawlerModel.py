@@ -1,9 +1,10 @@
 import asyncio
 import os
 import json
+from Core.Crawling.CrawlTarget import CrawlTarget
 
 from Core.Logging.Logger import *
-from Core.Crawler import Crawler
+from Core.Crawling.Crawler import Crawler
 from Core.Database import Database
 
 class CrawlerModel:
@@ -12,7 +13,7 @@ class CrawlerModel:
         pass
 
     @asyncio.coroutine
-    def CrawlAndSaveData(self, saveLocation: str, recursiveTimes: int, taskThread: None):
+    def CrawlAndSaveData(self, saveLocation: str, recursiveTimes: int, targetCrawlSite: str, taskThread = None):
         """
         Parameters
         ------------------------------------------
@@ -26,31 +27,37 @@ class CrawlerModel:
         Check Core.Async.TaskThread. Only use it when calling this as a thread.
 
         """
+
+        #region LocalFunction
+        def FreeThread():
+            nonlocal taskThread
+            if taskThread != None:
+                taskThread.isRunning = False
+        #endregion
+
+        print("run")
         invalidArgs = False
+        # Check if Save Location exists
         if not saveLocation.strip():
             self.viewModelRef.ShowUserMessage("Folder Path should not be empty!")
             invalidArgs = True
-        if not os.path.isdir(saveLocation):
+        elif not os.path.isdir(saveLocation):
             self.viewModelRef.ShowUserMessage("Path to folder does not exists!")
             invalidArgs = True
 
+        # Load target Site and Headers from configuration.
+        crawlConfig = CrawlerModel._GetTargetCrawlSiteConfig(targetCrawlSite)
+        if crawlConfig == None:
+            Log("Crawl Config Invalidation", "Crawl Config is invalid from the parm: {}".format(targetCrawlSite))
+            invalidArgs = True
 
+        # End if any of the passed arguments is invalid
         if invalidArgs:
-            if not taskThread == None:
-                taskThread.isRunning = False
+            FreeThread()
             return None
 
-        # TODO: Reformat
-        # These constants should be dynamic and loaded from somewhere
-        # based on the requested site to crawl.
-        crawlSite = "https://www.scamalert.sg/stories/GetStoryListAjax/"
-        crawlSiteData = {
-            "scamType": "",
-            "year": "",
-            "month": "",
-            "page": "1",
-            "sortBy": "Latest"
-        }
+        crawlSite = crawlConfig["Site"]
+        crawlSiteHeaders = crawlConfig["Headers"]
 
         jsonData = json.loads('{"Stories": []}')
 
@@ -58,8 +65,8 @@ class CrawlerModel:
         for pageNo in range(recursiveTimes):
             self.viewModelRef.UpdateLoadingBar((pageNo / recursiveTimes) * 100)
 
-            crawlSiteData["page"] = str(pageNo)
-            contentRaw = self.Crawl(crawlSite, crawlSiteData)
+            crawlSiteHeaders["page"] = str(pageNo)
+            contentRaw = self.Crawl(crawlSite, crawlSiteHeaders)
 
             # Try to get the raw contents as an array.
             contentArray = None
@@ -89,8 +96,21 @@ class CrawlerModel:
 
         self.viewModelRef.ShowUserMessage("Successfully saved under " + saveLocation)
         self.viewModelRef.UpdateLoadingBar(100)
-        if taskThread != None:
-            taskThread.isRunning = False
+        FreeThread()
+
+    def _GetTargetCrawlSiteConfig(targetCrawlSite: str) -> dict:
+        targetCrawlSite = targetCrawlSite.strip()
+        crawlTarget = None
+        if targetCrawlSite == "ScamAlert - Stories":
+            crawlTarget = CrawlTarget.SCAM_ALERT_STORIES
+        elif targetCrawlSite == "ScamAlert - News":
+            crawlTarget = CrawlTarget.SCAM_ALERT_NEWS
+        
+        if crawlTarget == None:
+            return None
+
+        # Load target Site and Headers from configuration.
+        return Crawler.LoadConfig(CrawlTarget.SCAM_ALERT_STORIES)
 
     def Crawl(self, site: str, data: object) -> str:
         crawler = Crawler(site, data, CrawlerModel.RemoveNoiseFromContent)

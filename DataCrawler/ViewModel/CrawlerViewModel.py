@@ -13,12 +13,11 @@ class CrawlerViewModel:
         self.currThread = None
         pass
 
-    def Update(self, window) -> None:
-        event, value = window.read()
+    def Update(self, event, value) -> None:
         if event == sg.WINDOW_CLOSED:
             self.appRef.CloseApp()
         elif event == START_CRAWL:
-            self.StartCrawl(window)
+            self.StartCrawl(self.appRef.window)
 
     def StartCrawl(self, window) -> None:
         if self.IsCurrTaskRunning():

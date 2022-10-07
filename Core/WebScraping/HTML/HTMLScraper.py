@@ -1,4 +1,3 @@
-import json
 from bs4 import BeautifulSoup
 
 from Core.Util import *
@@ -17,7 +16,8 @@ class HTMLScraper:
         **webContents**
         A list of 'WebContent'.
         """
-        self.soup = BeautifulSoup(htmlContent)
+        print(htmlContent)
+        self.soup = BeautifulSoup(htmlContent, "html.parser")
         self.webContents = webContents
         pass
 
@@ -32,6 +32,7 @@ class HTMLScraper:
         if result or result != None:
             return result
         else:
+            # TODO: SHould we log if its returning None?
             return None
 
     def _ScrapContent(self, webContent:WebContent):
@@ -46,6 +47,10 @@ class HTMLScraper:
         for content in rawContent:
             toAppend = None
             hasInner = False
+            # Ignore if Content not found.
+            if not content or content == None:
+                continue
+
             # If this webcontent has inner.
             if webContent.innerContents != None:
                 # Recursively scrap through each inner content
@@ -60,7 +65,7 @@ class HTMLScraper:
             # Append this webcontent if its not empty.
             if not IsEmptyOrWhitespace(content.text):
                 if hasInner:
-                    toAppend["text_content"] = content.text
+                    toAppend["TextContent"] = content.text
                 else:
                     toAppend = content.text
             

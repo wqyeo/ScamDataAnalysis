@@ -1,10 +1,14 @@
 import asyncio
+from configparser import RawConfigParser
 import os
 import json
 
 from Core.Logging.Logger import *
 from Core.Crawler import Crawler
 from Core.Database import Database
+
+from Core.WebScraping.HTML.HTMLScraper import *
+from Core.WebScraping.HTML.WebContent import *
 
 class DeepCrawlerModel:
     def __init__(self, viewModelRef) -> None:
@@ -24,6 +28,8 @@ class DeepCrawlerModel:
         Check Core.Async.TaskThread. Only use it when calling this as a thread.
 
         """
+
+        # Check if valid file path
         invalidArgs = False
         if not targetDataPath.strip():
             self.viewModelRef.ShowUserMessage("File Path should not be empty!")
@@ -32,7 +38,8 @@ class DeepCrawlerModel:
             self.viewModelRef.ShowUserMessage("Path to file does not exists!")
             invalidArgs = True
 
-        jsonData = None;
+        # Check if valid JSON File
+        jsonData = None
         if not invalidArgs:
             try:
                 jsonData = Database.OpenJsonData(targetDataPath)
@@ -43,10 +50,12 @@ class DeepCrawlerModel:
                 Log("Deep Crawl Data Read Error", message)
                 invalidArgs = True
 
+        # Either Invalid JSON File or File path.
         if invalidArgs:
             if not taskThread == None:
                 taskThread.isRunning = False
             return None
+
         # TODO: Reformat
         # These constants should be dynamic and loaded from somewhere
         # based on the requested site to crawl.
@@ -57,7 +66,7 @@ class DeepCrawlerModel:
 
         crawlSite = "https://www.scamalert.sg"
 
-        jsonData = json.loads('{"Stories": []}')
+        jsonData = json.loads('{"DetailedStories": []}')
 
         progress = 0
         for data in deepCrawlList:
@@ -65,15 +74,54 @@ class DeepCrawlerModel:
 
             targetSite = crawlSite + data["Url"]
             contentRaw = self.Crawl(targetSite)
-            print(contentRaw)
 
+            # NOTE: Debug
+            infoDumpPath = DumpInfo(contentRaw, LogSeverity.DEBUG)
+            Log("Scrapping Content " + data["Title"], "Preparing to scrap content, more details at {}".format(infoDumpPath), LogSeverity.DEBUG)
+
+            scraper = HTMLScraper(contentRaw, self._CreateWebContent())
+            content = scraper.Scrap()
+            if content == None:
+                continue
+
+            jsonContent = None
+            try:
+                jsonContent = json.dumps(content)
+            except:
+                infoFileName = DumpInfo(content, LogSeverity.ERROR)
+                message = "Error Converting one of scrapped data to JSON. More details at {}".format(infoFileName)
+                Log("JSON Data Conver Error {}".format(data["Title"]), message, LogSeverity.ERROR)
+                continue
+
+            jsonData["DetailedStories"].append(jsonContent)
+
+        # File name should be similar as target data.
+        originalFileName = os.path.basename(targetDataPath).split('/')[-1]
+        saveFileName = "DeepCrawled_" + originalFileName
+        # Save location same as where the target data is at.
+        saveLocation = os.path.join(os.path.dirname(os.path.abspath(targetDataPath)), saveFileName)
+
+        Database.SaveJsonData(jsonData, saveLocation)
+
+        self.viewModelRef.ShowUserMessage("Successfully saved under {}".format(saveLocation))
         self.viewModelRef.UpdateLoadingBar(100)
         if taskThread != None:
             taskThread.isRunning = False
 
     def Crawl(self, site: str) -> str:
         crawler = Crawler(site, None)
-        return crawler.Crawl()
+        return crawler.CrawlRaw()
+
+    def _CreateWebContent(self) -> list:
+        # TODO: Dynamically load these variables from a config file or something.
+        titleContent = WebContent("h1", "Title")
+        authorContent = WebContent("p", "Author", "lead")
+        titleAuthorContent = WebContent("div", "TitleAuthor", "col-md-8", [titleContent, authorContent])
+
+        scamTypeContent = WebContent("a", "ScamType", "text-primary")
+        scamDescriptionContent = WebContent("div", "Description", "lead")
+        scamContent = WebContent("div", "Body", "col-lg-8 col-md-12 mt-3 mb-5", [scamTypeContent, scamDescriptionContent])
+        return [scamContent, titleAuthorContent]
 
     def GetContentList(self, content:str, contentKey:str):
         # Get whatever is in '[]' after the contentKey

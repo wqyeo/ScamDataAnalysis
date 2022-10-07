@@ -76,7 +76,7 @@ class CrawlerModel:
                 try:
                     tempJson = json.loads(content)
                 except:
-                    infoFileName = DumpInfo(content)
+                    infoFileName = DumpInfo(content, LogSeverity.ERROR)
                     message = "Error Converting one data to JSON at page: {pageNo}. More info at {fileName}.".format(pageNo=pageNo, fileName=infoFileName)
                     Log("Data Convert Error", message, LogSeverity.ERROR)
                     continue

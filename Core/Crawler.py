@@ -23,6 +23,13 @@ class Crawler:
         self.noisePattern = noisePattern
         pass
 
+    def CrawlRaw(self) -> str:
+        request = requests.post(self.site, data=self.data)
+        content = request.text
+        if not self.noisePattern == None:
+            content = self.noisePattern(content)
+        return content
+
     def Crawl(self) -> str:
         """
         Crawl through using the initial set params.

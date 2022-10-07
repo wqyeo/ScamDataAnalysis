@@ -2,3 +2,4 @@ PySimpleGUI
 matplotlib
 multipledispatch
 requests
+beautifulsoup4

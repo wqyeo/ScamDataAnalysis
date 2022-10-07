@@ -14,7 +14,7 @@ class CrawlerViewModel:
         pass
 
     def Update(self, window) -> None:
-        event, value = window.read(timeout=500)
+        event, value = window.read()
         if event == sg.WINDOW_CLOSED:
             self.appRef.CloseApp()
         elif event == START_CRAWL:
@@ -29,7 +29,6 @@ class CrawlerViewModel:
 
         self.currThread = TaskThread("Crawl and Save")
         asyncio.run_coroutine_threadsafe(self.model.CrawlAndSaveData(filePath, recursiveNum, self.currThread), self.appRef.asyncLoop)
-        self.model.CrawlAndSaveData(filePath, recursiveNum)
 
     def ShowUserMessage(self, message) -> None:
         """

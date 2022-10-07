@@ -4,18 +4,19 @@ import PySimpleGUI as sg
 
 from Core.Async.TaskThread import TaskThread
 from DataCrawler.View.DeepCrawlerView import *
+from DataCrawler.Model.DeepCrawlerModel import *
 
 class DeepCrawlerViewModel:
     def __init__(self, appRef) -> None:
         self.appRef = appRef
 
         # TODO: Model
-        self.model = None
+        self.model = DeepCrawlerModel(self)
         self.currThread = None
         pass
 
     def Update(self, window) -> None:
-        event, value = window.read(timeout=500)
+        event, value = window.read()
         if event == sg.WINDOW_CLOSED:
             self.appRef.CloseApp()
         elif event == START_CRAWL:
@@ -26,8 +27,10 @@ class DeepCrawlerViewModel:
             return
 
         filePath = window[TARGET_CRAWL_DATA_KEY].get()
-        # TODO: Crawl
-        print("deep crawling triggered")
+        
+        self.currThread = TaskThread("Deep Crawl and Save")
+        asyncio.run_coroutine_threadsafe(self.model.CrawlAndSaveData(filePath, self.currThread), self.appRef.asyncLoop)
+        print("Deep Crawl Triggered")
 
     def ShowUserMessage(self, message) -> None:
         """

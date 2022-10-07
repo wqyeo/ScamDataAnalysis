@@ -9,8 +9,6 @@ from DataCrawler.Model.DeepCrawlerModel import *
 class DeepCrawlerViewModel:
     def __init__(self, appRef) -> None:
         self.appRef = appRef
-
-        # TODO: Model
         self.model = DeepCrawlerModel(self)
         self.currThread = None
         pass
@@ -30,7 +28,7 @@ class DeepCrawlerViewModel:
         
         self.currThread = TaskThread("Deep Crawl and Save")
         asyncio.run_coroutine_threadsafe(self.model.CrawlAndSaveData(filePath, self.currThread), self.appRef.asyncLoop)
-        print("Deep Crawl Triggered")
+        self.ShowUserMessage("Crawling...")
 
     def ShowUserMessage(self, message) -> None:
         """

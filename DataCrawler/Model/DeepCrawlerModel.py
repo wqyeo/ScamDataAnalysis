@@ -40,9 +40,11 @@ class DeepCrawlerModel:
 
         # Check if valid JSON File
         jsonData = None
+        targetCrawl = None
         if not invalidArgs:
             try:
                 jsonData = Database.OpenJsonData(targetDataPath)
+                targetCrawl = list(jsonData.keys())[0]
             except:
                 self.viewModelRef.ShowUserMessage("Given file is invalid! Not a JSON?")
                 message = "Error converting user given file to JSON; NOTE: User has likely given an invalid data format."
@@ -111,16 +113,9 @@ class DeepCrawlerModel:
         crawler = Crawler(site, None)
         return crawler.CrawlRaw()
 
-    def _CreateWebContent(self) -> list:
-        # TODO: Dynamically load these variables from a config file or something.
-        titleContent = WebContent("h1", "Title")
-        authorContent = WebContent("p", "Author", "lead")
-        titleAuthorContent = WebContent("div", "TitleAuthor", "col-md-8", [titleContent, authorContent])
-
-        scamTypeContent = WebContent("a", "ScamType", "text-primary")
-        scamDescriptionContent = WebContent("div", "Description", "lead")
-        scamContent = WebContent("div", "Body", "col-lg-8 col-md-12 mt-3 mb-5", [scamTypeContent, scamDescriptionContent])
-        return [scamContent, titleAuthorContent]
+    def _CreateWebContent(self, targetCrawl: str) -> list:
+        # TODO:
+        pass
 
     def GetContentList(self, content:str, contentKey:str):
         # Get whatever is in '[]' after the contentKey

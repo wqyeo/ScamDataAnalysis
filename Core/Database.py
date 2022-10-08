@@ -12,5 +12,5 @@ class Database:
             f.write(content)
 
     def SaveJsonData(data, savePath: str) -> None:
-        with open(savePath, 'w', encoding='utf-8') as f:
+        with open(savePath, 'w', encoding='utf-8-sig') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)

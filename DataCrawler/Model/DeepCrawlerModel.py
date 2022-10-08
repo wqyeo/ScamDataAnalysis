@@ -29,6 +29,10 @@ class DeepCrawlerModel:
 
         """
 
+        def FreeThread():
+            if taskThread != None:
+                taskThread.isRunning = False
+
         # Check if valid file path
         invalidArgs = False
         if not targetDataPath.strip():
@@ -41,10 +45,17 @@ class DeepCrawlerModel:
         # Check if valid JSON File
         jsonData = None
         targetCrawl = None
+        webContents = None
         if not invalidArgs:
             try:
                 jsonData = Database.OpenJsonData(targetDataPath)
                 targetCrawl = list(jsonData.keys())[0]
+                webContents = self._CreateWebContent(targetCrawl)
+
+                if webContents == None:
+                    Log("Deep Crawl Unknown Data", "User gave a valid JSON file, but unknown data to parse, {}".format(targetCrawl))
+                    self.viewModelRef.ShowUserMessage("Unknown contents in given JSON file.")
+                    invalidArgs = True
             except:
                 self.viewModelRef.ShowUserMessage("Given file is invalid! Not a JSON?")
                 message = "Error converting user given file to JSON; NOTE: User has likely given an invalid data format."
@@ -54,8 +65,7 @@ class DeepCrawlerModel:
 
         # Either Invalid JSON File or File path.
         if invalidArgs:
-            if not taskThread == None:
-                taskThread.isRunning = False
+            FreeThread()
             return None
 
         # TODO: Reformat
@@ -81,7 +91,7 @@ class DeepCrawlerModel:
             infoDumpPath = DumpInfo(contentRaw, LogSeverity.DEBUG)
             Log("Scrapping Content " + data["Title"], "Preparing to scrap content, more details at {}".format(infoDumpPath), LogSeverity.DEBUG)
 
-            scraper = HTMLScraper(contentRaw, self._CreateWebContent())
+            scraper = HTMLScraper(contentRaw, webContents)
             content = scraper.Scrap()
             if content == None:
                 continue
@@ -106,16 +116,20 @@ class DeepCrawlerModel:
 
         self.viewModelRef.ShowUserMessage("Successfully saved under {}".format(saveLocation))
         self.viewModelRef.UpdateLoadingBar(100)
-        if taskThread != None:
-            taskThread.isRunning = False
+        FreeThread()
 
     def Crawl(self, site: str) -> str:
         crawler = Crawler(site, None)
         return crawler.CrawlRaw()
 
     def _CreateWebContent(self, targetCrawl: str) -> list:
-        # TODO:
-        pass
+        targetType = None
+        if targetCrawl.strip() == "Stories":
+            targetType = ScrapTarget.SCAM_ALERT_STORIES
+        else:
+            return None
+
+        return WebContent.CreateWebContentsByTarget(targetType)
 
     def GetContentList(self, content:str, contentKey:str):
         # Get whatever is in '[]' after the contentKey

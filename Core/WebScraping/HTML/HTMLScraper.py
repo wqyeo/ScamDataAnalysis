@@ -65,7 +65,7 @@ class HTMLScraper:
                     hasInner = True
                 
             # Append this webcontent if its not empty.
-            if not IsEmptyOrWhitespace(content.text):
+            if not IsEmptyOrWhitespace(content.text) and webContent.storeTextContent:
                 contentText = self._Clean(content.text)
                 if hasInner:
                     toAppend["TextContent"] = contentText

@@ -1,0 +1,39 @@
+{
+    "WebContents": [
+        {
+            "tag": "div",
+            "jsonName": "TitleAuthor",
+            "class_": "col-md-8",
+            "storeTextContent": false,
+            "innerContents": [
+                {
+                    "tag": "h1",
+                    "jsonName": "Title"
+                },
+                {
+                    "tag": "p",
+                    "jsonName": "Author",
+                    "class_": "lead"
+                }
+            ]
+        },
+        {
+            "tag": "div",
+            "jsonName": "Body",
+            "class_": "col-lg-8 col-md-12 mt-3 mb-5",
+            "storeTextContent": false,
+            "innerContents": [
+                {
+                    "tag": "a",
+                    "jsonName": "ScamType",
+                    "class_": "text-primary"
+                },
+                {
+                    "tag": "div",
+                    "jsonName": "Description",
+                    "class_": "lead"
+                }
+            ]
+        }
+    ]
+}

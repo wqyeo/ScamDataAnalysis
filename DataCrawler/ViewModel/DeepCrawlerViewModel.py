@@ -6,27 +6,30 @@ from Core.Async.TaskThread import TaskThread
 from DataCrawler.View.DeepCrawlerView import *
 from DataCrawler.Model.DeepCrawlerModel import *
 
+DEEP_CRAWL_TASK_NAME = "DETAILED_SCAMALERT_STORIES_CRAWL_TASK"
+
 class DeepCrawlerViewModel:
     def __init__(self, appRef) -> None:
         self.appRef = appRef
         self.model = DeepCrawlerModel(self)
-        self.currThread = None
         pass
 
     def Update(self, event, value) -> None:
-        if event == sg.WINDOW_CLOSED:
-            self.appRef.CloseApp()
-        elif event == START_CRAWL:
+        if event == START_CRAWL:
             self.StartCrawl(self.appRef.window) 
 
     def StartCrawl(self, window) -> None:
-        if self.IsCurrTaskRunning():
+        newThread = TaskThread(DEEP_CRAWL_TASK_NAME)
+        if not self.appRef.TryAddTask(newThread):
+            # TODO: Allow user to cancel crawling?
+            self.ShowUserMessage("Already Crawling...")
             return
 
         filePath = window[TARGET_CRAWL_DATA_KEY].get()
         
-        self.currThread = TaskThread("Deep Crawl and Save")
-        asyncio.run_coroutine_threadsafe(self.model.CrawlAndSaveData(filePath, self.currThread), self.appRef.asyncLoop)
+        newThread = TaskThread(DEEP_CRAWL_TASK_NAME)
+
+        asyncio.run_coroutine_threadsafe(self.model.CrawlAndSaveData(filePath, newThread), self.appRef.asyncLoop)
         self.ShowUserMessage("Crawling...")
 
     def ShowUserMessage(self, message) -> None:
@@ -39,9 +42,5 @@ class DeepCrawlerViewModel:
     def UpdateLoadingBar(self, percentValue: int) -> None:
         self.appRef.window[LOADING_BAR_KEY].update(percentValue)
 
-    def IsCurrTaskRunning(self) -> bool:
-        if self.currThread == None:
-            return False
-        if self.currThread.isRunning:
-            return True
-        return True
+    def FreeAppThread(self):
+        self.appRef.asyncTaskManager.RemoveIdleTasks()

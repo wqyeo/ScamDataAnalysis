@@ -34,6 +34,7 @@ class CrawlerModel:
             nonlocal taskThread
             if taskThread != None:
                 taskThread.isRunning = False
+                self.viewModelRef.FreeAppThread()
         #endregion
 
         print("run")

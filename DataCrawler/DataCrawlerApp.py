@@ -1,4 +1,6 @@
 import PySimpleGUI as sg
+from Core.Async.AppTaskManager import AppTaskManager
+from Core.Async.TaskThread import TaskThread
 
 from DataCrawler.View.CrawlerView import *
 from DataCrawler.View.DeepCrawlerView import *
@@ -14,10 +16,15 @@ class DataCrawlerApp:
             DeepCrawlerViewModel(self) 
         ]
         self.asyncLoop = mainAsyncLoop
-        pass
+        self.asyncTaskManager = AppTaskManager(self)
 
     def Update(self) -> None:
         event, value = self.window.read()
+
+        if event == sg.WINDOW_CLOSED:
+            # TODO: Warn if any of the thread are still active.
+            self.appRef.CloseApp()
+            return
         # TODO: See if it possible to update the respective view-model
         # based on the current viewed Tab.
         for viewModel in self.viewModels:
@@ -38,3 +45,14 @@ class DataCrawlerApp:
         return [
             [APP_TAB_GROUP]
         ]
+
+    def TryAddTask(self, task: TaskThread) -> bool:
+        """
+        Try to add a task to the app's async task pool.
+
+        Return false if the task already exists.
+        """
+        if self.asyncTaskManager.TaskExists(task):
+            return False
+        self.asyncTaskManager.AddTask(task)
+        return True

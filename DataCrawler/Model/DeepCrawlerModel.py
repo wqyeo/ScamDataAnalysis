@@ -30,9 +30,10 @@ class DeepCrawlerModel:
         """
 
         def FreeThread():
+            nonlocal taskThread
             if taskThread != None:
                 taskThread.isRunning = False
-
+                self.viewModelRef.FreeAppThread()
         # Check if valid file path
         invalidArgs = False
         if not targetDataPath.strip():

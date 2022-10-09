@@ -1,8 +1,9 @@
-import asyncio
 import os
 import json
-from Core.Crawling.CrawlTarget import CrawlTarget
+import asyncio
+import datetime
 
+from Core.Crawling.CrawlTarget import CrawlTarget
 from Core.Logging.Logger import *
 from Core.Crawling.Crawler import Crawler
 from Core.Database import Database
@@ -45,8 +46,9 @@ class CrawlerModel:
             self.viewModelRef.ShowUserMessage("Path to folder does not exists!")
             invalidArgs = True
 
+        crawlTarget = CrawlerModel._GetCrawlTarget(targetCrawlSite)
         # Load target Site and Headers from configuration.
-        crawlConfig = CrawlerModel._GetTargetCrawlSiteConfig(targetCrawlSite)
+        crawlConfig = CrawlerModel._GetTargetCrawlSiteConfig(crawlTarget)
         if crawlConfig == None:
             Log("Crawl Config Invalidation", "Crawl Config is invalid from the parm: {}".format(targetCrawlSite))
             invalidArgs = True
@@ -66,12 +68,12 @@ class CrawlerModel:
             self.viewModelRef.UpdateLoadingBar((pageNo / recursiveTimes) * 100)
 
             crawlSiteHeaders["page"] = str(pageNo)
-            contentRaw = self.Crawl(crawlSite, crawlSiteHeaders)
+            contentRaw = self._Crawl(crawlSite, crawlSiteHeaders)
 
             # Try to get the raw contents as an array.
             contentArray = None
             try:
-                contentArray = self.GetContentList(contentRaw, "StoryList")
+                contentArray = self._GetContentList(contentRaw, "StoryList")
             except:
                 infoFileName = DumpInfo(contentRaw)
                 message = "Error Fetching data at page: {pageNo}. More info at {fileName}.".format(pageNo=pageNo, fileName=infoFileName)
@@ -90,33 +92,40 @@ class CrawlerModel:
 
                 jsonData["Stories"].append(tempJson)
 
-        # TODO: Proper generation for file-name rather than 'debug.json'
-        saveLocation = saveLocation + "/debug.json"
+        fileName = CrawlerModel._GenerateFileName(crawlTarget)
+        saveLocation = os.path.join(saveLocation, fileName)
         Database.SaveJsonData(jsonData, saveLocation)
 
         self.viewModelRef.ShowUserMessage("Successfully saved under " + saveLocation)
         self.viewModelRef.UpdateLoadingBar(100)
         FreeThread()
 
-    def _GetTargetCrawlSiteConfig(targetCrawlSite: str) -> dict:
+    def _GenerateFileName(crawlTarget: CrawlTarget) -> str:
+        # Crawl Type - Datetime - .json
+        return crawlTarget.name + "_" + (datetime.datetime.now().strftime("%Y-%B-%d_%H-%M-%S")) + ".json"
+
+    def _GetCrawlTarget(targetCrawlSite: str) -> CrawlTarget:
         targetCrawlSite = targetCrawlSite.strip()
         crawlTarget = None
         if targetCrawlSite == "ScamAlert - Stories":
             crawlTarget = CrawlTarget.SCAM_ALERT_STORIES
         elif targetCrawlSite == "ScamAlert - News":
             crawlTarget = CrawlTarget.SCAM_ALERT_NEWS
-        
+
+        return crawlTarget
+
+    def _GetTargetCrawlSiteConfig(crawlTarget: CrawlTarget) -> dict: 
         if crawlTarget == None:
             return None
 
         # Load target Site and Headers from configuration.
         return Crawler.LoadConfig(CrawlTarget.SCAM_ALERT_STORIES)
 
-    def Crawl(self, site: str, data: object) -> str:
+    def _Crawl(self, site: str, data: object) -> str:
         crawler = Crawler(site, data, CrawlerModel.RemoveNoiseFromContent)
         return crawler.Crawl()
 
-    def GetContentList(self, content:str, contentKey:str):
+    def _GetContentList(self, content:str, contentKey:str):
         # Get whatever is in '[]' after the contentKey
         content = content[content.index(contentKey):]
         content = content[content.index("[")+1:]
@@ -131,6 +140,7 @@ class CrawlerModel:
         return contentArray
 
     def RemoveNoiseFromContent(content: str) -> str:
+        content = content.replace('\\"', "'")
         content = content.replace("\\u0026", "&")
         content = content.replace("\\u0027", "'")
         content = content.replace("\\xa0\\", " ")

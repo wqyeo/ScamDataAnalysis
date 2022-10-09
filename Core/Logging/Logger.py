@@ -28,7 +28,7 @@ def Log(logMessage: LogMessage) -> None:
     print(logMessage.title + " : " + logMessage.message)
     
     filePath = os.path.join("LogDump", logMessage.GetLogDateString() + ".log")
-    with open(filePath, 'a+', "utf-8-sig") as f:
+    with open(filePath, 'a+', encoding="utf-8-sig") as f:
         f.write(logMessage.ToString() + "\r\n")
 
 def DumpInfo(info:str, severity:LogSeverity=LogSeverity.LOG) -> str:

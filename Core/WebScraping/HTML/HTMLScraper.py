@@ -1,4 +1,6 @@
 from bs4 import BeautifulSoup
+from Core.Logging.LogSeverity import LogSeverity
+from Core.Logging.Logger import Log
 
 from Core.Util import *
 from Core.WebScraping.HTML.WebContent import WebContent
@@ -63,14 +65,24 @@ class HTMLScraper:
                     toAppend = {}
                     toAppend.update(scrapped)
                     hasInner = True
+
                 
-            # Append this webcontent if its not empty.
-            if not IsEmptyOrWhitespace(content.text) and webContent.storeTextContent:
+            # Try append if requested.
+            if webContent.storeTextContent:
                 contentText = self._Clean(content.text)
-                if hasInner:
-                    toAppend["TextContent"] = contentText
-                else:
-                    toAppend = contentText
+                contentText = self._SplitContent(contentText, webContent.contentSplit)
+                contentText = contentText.strip()
+
+                # Append this webcontent text if not empty
+                if not IsEmptyOrWhitespace(contentText):
+                    if webContent.contentSplit != None:
+                        for splitConfig in webContent.contentSplit:
+                            splitConfig = splitConfig.split(",")
+
+                    if hasInner:
+                        toAppend["TextContent"] = contentText
+                    else:
+                        toAppend = contentText
             
             # Append to result if this content is not empty.
             if toAppend != None or not toAppend:
@@ -87,6 +99,27 @@ class HTMLScraper:
             return result
         else:
             return None
+
+    def _SplitContent(self, contentText: str, splitConfigs: list) -> str:
+        if splitConfigs == None:
+            return contentText
+
+        for config in splitConfigs:
+            try:
+                config = config.split(",")
+
+                if len(config) <= 1:
+                    raise Exception("Config wrong")
+                contentText = contentText.split(config[1])
+
+                if config[0].lower() == "left":
+                    contentText = contentText[0]
+                else:
+                    contentText = contentText[1]
+            except:
+                Log("HTML Scrapper Split Configuration", "One of the HTML Split Configuration is wrong, {}.".format(config), LogSeverity.LOG)
+                return None
+        return contentText
 
     def _Clean(self, content:str) -> str:
         # TODO: Load from config or smth

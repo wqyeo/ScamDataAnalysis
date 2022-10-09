@@ -12,8 +12,15 @@
                 },
                 {
                     "tag": "p",
-                    "jsonName": "AuthorDate",
-                    "class_": "lead"
+                    "jsonName": "Author",
+                    "class_": "lead",
+                    "contentSplit" : ["left,|"]
+                },
+                {
+                    "tag": "p",
+                    "jsonName": "Date",
+                    "class_": "lead",
+                    "contentSplit": ["right,|"]
                 }
             ]
         },

@@ -87,10 +87,6 @@ class DeepCrawlerModel:
             targetSite = crawlSite + data["Url"]
             contentRaw = self._Crawl(targetSite)
 
-            # NOTE: Debug
-            infoDumpPath = DumpInfo(contentRaw, LogSeverity.DEBUG)
-            Log("Scrapping Content " + data["Title"], "Preparing to scrap content, more details at {}".format(infoDumpPath), LogSeverity.DEBUG)
-
             scraper = HTMLScraper(contentRaw, webContents)
             content = scraper.Scrap()
             if content == None:

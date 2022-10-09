@@ -6,7 +6,7 @@ from Core.WebScraping.HTML.ScrapTarget import ScrapTarget
 
 
 class WebContent:
-    def __init__(self, tag: str, jsonName: str, class_:str = None, innerContents: list = None, storeTextContent: bool = True) -> None:
+    def __init__(self, tag: str, jsonName: str, class_:str = None, innerContents: list = None, storeTextContent: bool = True, contentSplit = None) -> None:
         """
         Represents a web content data.
 
@@ -29,6 +29,7 @@ class WebContent:
         self.jsonName = jsonName
         self.innerContents = innerContents
         self.storeTextContent = storeTextContent
+        self.contentSplit = None
         pass
 
     def CreateWebContentsByTarget(scrapTarget: ScrapTarget) -> list:
@@ -72,6 +73,8 @@ class WebContent:
                 current.storeTextContent = config["storeTextContent"]
             if "innerContents" in config:
                 current.innerContents = WebContent._LoadWebContent(config["innerContents"])
+            if "contentSplit" in config:
+                current.contentSplit = config["contentSplit"]
             result.append(current)
         
         if len(result) == 0:

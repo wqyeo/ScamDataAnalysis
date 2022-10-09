@@ -19,7 +19,7 @@ def _RunMainWindow(mainThread: Thread, mainAsyncLoop: AbstractEventLoop) -> None
     appWindow = _CreateMainWindow()
 
     while True:
-        event, value = appWindow.read()
+        event, value = appWindow.read(timeout=10)
         if event == sg.WINDOW_CLOSED:
             break
         elif event == "Crawler":

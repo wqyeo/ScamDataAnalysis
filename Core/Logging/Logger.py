@@ -25,7 +25,12 @@ def SetupDirectory():
 def Log(logMessage: LogMessage) -> None:
     SetupDirectory()
 
-    print(logMessage.title + " : " + logMessage.message)
+    printMessage = "[{logSeverity} {logTitle} :: {logMessage}]".format(
+        logSeverity = logMessage.severity.name,
+        logTitle = logMessage.title,
+        logMessage = logMessage.message
+    )
+    print(printMessage)
     
     filePath = os.path.join("LogDump", logMessage.GetLogDateString() + ".log")
     with open(filePath, 'a+', encoding="utf-8-sig") as f:

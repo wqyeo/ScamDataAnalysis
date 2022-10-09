@@ -23,12 +23,10 @@ class DeepCrawlerViewModel:
         if not self.appRef.TryAddTask(newThread):
             # TODO: Allow user to cancel crawling?
             self.ShowUserMessage("Already Crawling...")
-            return
+            return None
 
         filePath = window[TARGET_CRAWL_DATA_KEY].get()
         
-        newThread = TaskThread(DEEP_CRAWL_TASK_NAME)
-
         asyncio.run_coroutine_threadsafe(self.model.CrawlAndSaveData(filePath, newThread), self.appRef.asyncLoop)
         self.ShowUserMessage("Crawling...")
 

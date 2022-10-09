@@ -29,11 +29,21 @@ class DeepCrawlerModel:
 
         """
 
+#region Local_Functions
+
         def FreeThread():
             nonlocal taskThread
             if taskThread != None:
                 taskThread.isRunning = False
                 self.viewModelRef.FreeAppThread()
+
+        def ThreadStopSignalled():
+            nonlocal taskThread
+            if taskThread != None:
+                return not taskThread.isRunning
+
+#endregion
+
         # Check if valid file path
         invalidArgs = False
         if not targetDataPath.strip():
@@ -42,6 +52,10 @@ class DeepCrawlerModel:
         if not os.path.isfile(targetDataPath):
             self.viewModelRef.ShowUserMessage("Path to file does not exists!")
             invalidArgs = True
+
+        if invalidArgs:
+            FreeThread()
+            return None
 
         # Check if valid JSON File
         jsonData = None
@@ -83,6 +97,11 @@ class DeepCrawlerModel:
 
         progress = 0
         for data in deepCrawlList:
+            if ThreadStopSignalled():
+                FreeThread()
+                Log("Thread stop signal recieved.", "Receieved a Thread stop signal on {}".format(taskThread.name), LogSeverity.DEBUG)
+                return None
+
             self.viewModelRef.UpdateLoadingBar((progress / len(deepCrawlList)) * 100)
 
             targetSite = crawlSite + data["Url"]

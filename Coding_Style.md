@@ -4,6 +4,8 @@
     3. [Commenting](#commenting)
 2. [Python](#python)
     1. [Order of imports](#order-of-imports)
+    2. [Local Functions](#local-functions)
+3. [Modules]
 
 # General
 
@@ -40,12 +42,10 @@
 
 Variables/functions names should be clear. Anyone reading the code later should know what the variable/function is for. Avoid generic names such as `p`, `var1`, `tmp`, `flag`, etc.
 
-For clarity as well, avoid vague abbreviations, single-letter names, and acronyms, in both texts and variables/functions names:
-- `stats` -> `statistics`
-- `config` -> `configurations`
+For clarity as well, avoid vague abbreviations and single-letter names, in both texts and variables/functions names:
 - `k, v` -> `key, value`
 
-It is better for an object to have a longer name, than a vague confusing name.
+As a rule of thumb, it is better for an object to have a longer name, than a vague confusing name.
 
 ## **Spacing**
 
@@ -76,9 +76,9 @@ It is better for an object to have a longer name, than a vague confusing name.
     ```python
     #region Name of Section
     
-    some_code()
-    # A comment
-    some_code()
+    SomeFunction()
+    # A comment about ANother Function
+    AnotherFunction()
     
     #endregion
     ```
@@ -95,3 +95,45 @@ Use `#NOTE:` for longer comment explaining certain functionalities.
 3. Project imports
 
 Within each section, try to sort by length. Shortest naming import to longest naming imports.
+
+## Local Functions
+
+```python
+def YourFunction():
+    """
+    Your pydoc comments
+    """
+#region Local_Function
+def LocalFunction():
+    return None
+
+def AnotherLocalFunction():
+    return None
+#endregion
+
+    x = "YourFunction operations"
+    return x
+```
+
+Local Functions should be at the start of the function, after the pydoc comments, before the functions main operations. All local functions should be wrapped in `#region` comments, marking it as Local Functions.
+
+Local Functions should not have any local functions within. (Have only 1 level of Local Function indent.)
+
+Try to keep each local function short. If the function is long, consider implementing a private function in the same module instead.
+
+# Modules
+
+## Logging
+
+*This module is under `Core.Logging`*
+
+Try to log some sort of data when preforming `try-except`, to indicate the reasoning why an exception might occur.<br>For logging severities, this is the guideline.
+
+**Log Severity**
+- DEBUG : Use it for testing or debugging.
+- LOG : Use it to keep track of certain actions being performed.
+- WARNING : Report unusual actions that occur. Those actions provides no negative impact to any future actions.
+- ERROR : Report unusual actions that occur. Those actions might result in unwanted outputs by the user, but does not interfere with the user using the application.
+- SEVERE : Report unusual actions that occur. Those actions will interfere with the user using the application.
+
+All Log files will be saved under a `LogDump` folder that is automatically created in the same project directory.

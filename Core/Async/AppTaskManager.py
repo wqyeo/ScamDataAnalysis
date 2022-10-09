@@ -23,3 +23,7 @@ class AppTaskManager:
         # Remove all tasks in list that is not running.
         self.currentTasks = [task for task in self.currentTasks if task.isRunning]
 
+    def EndAllTask(self) -> None:
+        for thread in self.currentTasks:
+            thread.isRunning = False
+            Log("Stop Thread Signal", "Signal Thread stop to {}".format(thread.name), LogSeverity.DEBUG)

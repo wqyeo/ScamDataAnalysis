@@ -29,13 +29,18 @@ class CrawlerModel:
 
         """
 
-        #region LocalFunction
+#region LocalFunction
         def FreeThread():
             nonlocal taskThread
             if taskThread != None:
                 taskThread.isRunning = False
                 self.viewModelRef.FreeAppThread()
-        #endregion
+
+        def ThreadStopSignalled() -> bool:
+            nonlocal taskThread
+            if taskThread != None:
+                return not taskThread.isRunning
+#endregion
 
         print("run")
         invalidArgs = False
@@ -66,6 +71,12 @@ class CrawlerModel:
 
         # Recursively crawl and fetch raw content (string)
         for pageNo in range(recursiveTimes):
+            # This thread stop signal is send
+            if ThreadStopSignalled():
+                FreeThread()
+                Log("Thread stop signal recieved.", "Receieved a Thread stop signal on {}".format(taskThread.name), LogSeverity.DEBUG)
+                return None
+            
             self.viewModelRef.UpdateLoadingBar((pageNo / recursiveTimes) * 100)
 
             crawlSiteHeaders["page"] = str(pageNo)

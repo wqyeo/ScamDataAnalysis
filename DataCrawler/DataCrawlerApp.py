@@ -19,12 +19,22 @@ class DataCrawlerApp:
         self.asyncTaskManager = AppTaskManager(self)
 
     def Update(self) -> None:
-        event, value = self.window.read()
+        event, value = self.window.read(timeout=10)
 
         if event == sg.WINDOW_CLOSED:
-            # TODO: Warn if any of the thread are still active.
-            self.appRef.CloseApp()
-            return
+            choice = "Yes"
+            self.asyncTaskManager.RemoveIdleTasks()
+            if len(self.asyncTaskManager.currentTasks) > 0:
+                # Create Popup to notify user that a crawling thread is still active.
+                # User can choose to cancel it.
+                choice, _ = sg.Window('Cancel Crawling', [[sg.T('Crawler is still actively crawling, cancel crawling?')], [sg.Yes(s=10), sg.No(s=10)]], disable_close=True).read(close=True)
+
+            # Default if no thread/task.
+            # or when user choose to cancel.
+            if choice == "Yes":
+                self.asyncTaskManager.EndAllTask()
+                self.CloseApp()
+                return None
         # TODO: See if it possible to update the respective view-model
         # based on the current viewed Tab.
         for viewModel in self.viewModels:

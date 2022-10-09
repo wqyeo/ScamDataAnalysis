@@ -85,7 +85,7 @@ class DeepCrawlerModel:
             self.viewModelRef.UpdateLoadingBar((progress / len(deepCrawlList)) * 100)
 
             targetSite = crawlSite + data["Url"]
-            contentRaw = self.Crawl(targetSite)
+            contentRaw = self._Crawl(targetSite)
 
             # NOTE: Debug
             infoDumpPath = DumpInfo(contentRaw, LogSeverity.DEBUG)
@@ -108,7 +108,7 @@ class DeepCrawlerModel:
 
         # File name should be similar as target data.
         originalFileName = os.path.basename(targetDataPath).split('/')[-1]
-        saveFileName = "DeepCrawled_" + originalFileName
+        saveFileName = "Detailed_" + originalFileName
         # Save location same as where the target data is at.
         saveLocation = os.path.join(os.path.dirname(os.path.abspath(targetDataPath)), saveFileName)
 
@@ -118,7 +118,7 @@ class DeepCrawlerModel:
         self.viewModelRef.UpdateLoadingBar(100)
         FreeThread()
 
-    def Crawl(self, site: str) -> str:
+    def _Crawl(self, site: str) -> str:
         crawler = Crawler(site, None)
         return crawler.CrawlRaw()
 
@@ -130,24 +130,3 @@ class DeepCrawlerModel:
             return None
 
         return WebContent.CreateWebContentsByTarget(targetType)
-
-    def GetContentList(self, content:str, contentKey:str):
-        # Get whatever is in '[]' after the contentKey
-        content = content[content.index(contentKey):]
-        content = content[content.index("[")+1:]
-        content = content[:content.index("]")]
-
-        # Split the string by each '{}'
-        content = content.replace("},", "ia2sd3")
-        contentArray = content.split("ia2sd3")
-        for i in range(0,len(contentArray) - 2, 1):
-            contentArray[i] += "}"
-
-        return contentArray
-
-    def RemoveNoiseFromContent(content: str) -> str:
-        content = content.replace("\\u0026", "&")
-        content = content.replace("\\u0027", "'")
-        content = content.replace("\\xa0\\", " ")
-        
-        return content

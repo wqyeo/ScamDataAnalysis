@@ -12,7 +12,7 @@
                 },
                 {
                     "tag": "p",
-                    "jsonName": "Author",
+                    "jsonName": "AuthorDate",
                     "class_": "lead"
                 }
             ]

@@ -38,8 +38,6 @@ class DataVisualizationApp:
                 self.asyncTaskManager.EndAllTask()
                 self.CloseApp()
                 return None
-        # TODO: See if it possible to update the respective view-model
-        # based on the current viewed Tab.
         for viewModel in self.viewModels:
             viewModel.Update(event, value)
 

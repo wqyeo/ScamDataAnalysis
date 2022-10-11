@@ -10,6 +10,9 @@ class DataVisualizationViewModel:
         self.appRef = appRef
         self.model = DataVisualizationModel(self)
 
+    def Update(self, event, value):
+        pass
+
     def create_figure(self) -> None:
         fig = matplotlib.figure.Figure(figsize=(5, 4), dpi=100)
         fig = matplotlib.figure.Figure(figsize=(5, 4), dpi=100)

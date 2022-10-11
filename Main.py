@@ -3,6 +3,8 @@ import PySimpleGUI as sg
 
 from Core.Async.AsyncThread import *
 from DataCrawler.DataCrawlerApp import DataCrawlerApp
+from DataVisualization.DataVisualizationApp import DataVisualizationApp
+
 
 def _CreateMainWindow():
     WINDOW_TITLE = "Scam Data Analysis"
@@ -13,7 +15,8 @@ def _CreateMainWindow():
         [sg.Text("", key="Error_MSG")]
     ]
 
-    return sg.Window(title= WINDOW_TITLE, layout = WINDOW_LAYOUT, margins= WINDOW_MARGIN)
+    return sg.Window(title=WINDOW_TITLE, layout=WINDOW_LAYOUT, margins=WINDOW_MARGIN)
+
 
 def _RunMainWindow(mainThread: Thread, mainAsyncLoop: AbstractEventLoop) -> None:
     appWindow = _CreateMainWindow()
@@ -27,14 +30,17 @@ def _RunMainWindow(mainThread: Thread, mainAsyncLoop: AbstractEventLoop) -> None
             _RunApplication(DataCrawlerApp(mainAsyncLoop))
             appWindow = _CreateMainWindow()
         elif event == "Anaylzer":
-            appWindow["Error_MSG"].update("Analyzer Not Implemented yet")
-            pass
+            appWindow.close()
+            _RunApplication(DataVisualizationApp(mainAsyncLoop))
+            appWindow = _CreateMainWindow()
 
     appWindow.close()
+
 
 def _RunApplication(app) -> None:
     while app.isOpen:
         app.Update()
+
 
 _mainAsyncThread = StartAsyncLoop()
 _RunMainWindow(_mainAsyncThread[0], _mainAsyncThread[1])

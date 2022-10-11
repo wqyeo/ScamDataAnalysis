@@ -28,13 +28,14 @@ class Analyzer:
             return False
 
         dateData = []
-        for i in jsonData:
-            if 'Date' in i:
-                dateData.append(i)
+        for data in jsonData:
+            if 'Date' in data:
+                dateData.append(data["Date"])
 
-        dateCount = dict()
+        dateCount = {}
         for i in dateData:
-            dateCount[i] = dateCount.get(i, 0) + 1
+            t = dateCount.get(i, 0) + 1
+            dateCount[i] = t
         dateCount = dict(sorted(dateCount.items()))
 
         shortendate = truncateKeys(dateCount, -4)

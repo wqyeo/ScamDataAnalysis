@@ -14,7 +14,6 @@ class DataVisualizationApp:
         self.isOpen = True
         self.viewModels = [
             DataVisualizationViewModel(self),
-
         ]
         self.asyncLoop = mainAsyncLoop
         self.asyncTaskManager = AppTaskManager(self)
@@ -28,8 +27,8 @@ class DataVisualizationApp:
             if len(self.asyncTaskManager.currentTasks) > 0:
                 # Create Popup to notify user that a crawling thread is still active.
                 # User can choose to cancel it.
-                choice, _ = sg.Window('Cancel Crawling',
-                                      [[sg.T('Crawler is still actively crawling, cancel crawling?')],
+                choice, _ = sg.Window('Cancel Analysis',
+                                      [[sg.T('Analyzer is still actively analyzing, cancel analysis?')],
                                        [sg.Yes(s=10), sg.No(s=10)]], disable_close=True).read(close=True)
 
             # Default if no thread/task.

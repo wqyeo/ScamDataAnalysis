@@ -45,15 +45,9 @@ class DeepCrawlerModel:
 #endregion
 
         # Check if valid file path
-        invalidArgs = False
-        if not targetDataPath.strip():
-            self.viewModelRef.ShowUserMessage("File Path should not be empty!")
-            invalidArgs = True
-        if not os.path.isfile(targetDataPath):
-            self.viewModelRef.ShowUserMessage("Path to file does not exists!")
-            invalidArgs = True
-
+        invalidArgs = not IsValidFilePath(targetDataPath)
         if invalidArgs:
+            self.viewModelRef.ShowUserMessage("Given File Path is invalid!")
             FreeThread()
             return None
 
@@ -126,7 +120,7 @@ class DeepCrawlerModel:
         originalFileName = os.path.basename(targetDataPath).split('/')[-1]
         saveFileName = "Detailed_" + originalFileName
         # Save location same as where the target data is at.
-        saveLocation = os.path.join(os.path.dirname(os.path.abspath(targetDataPath)), saveFileName)
+        saveLocation = os.path.join(GetDirectoryFromFilePath(targetDataPath), saveFileName)
 
         Database.SaveJsonData(jsonData, saveLocation)
 

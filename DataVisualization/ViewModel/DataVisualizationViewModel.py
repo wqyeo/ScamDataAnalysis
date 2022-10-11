@@ -3,7 +3,7 @@ import matplotlib.figure
 import matplotlib.pyplot as plt
 
 from DataVisualization.Model.DataVisualizationModel import DataVisualizationModel
-
+from DataVisualization.View.DataVisualizationView import *
 
 class DataVisualizationViewModel:
     def __init__(self, appRef) -> None:
@@ -11,7 +11,15 @@ class DataVisualizationViewModel:
         self.model = DataVisualizationModel(self)
 
     def Update(self, event, value):
-        pass
+        if event == START_ANALYZE_EVENT:
+            self._AnalyzeEvent()
+
+    def _AnalyzeEvent(self):
+        targetFilePath = self.appRef.window[TARGET_FILE_LOCATION_KEY].get()
+        figPath = self.model.AnalyzeData(targetFilePath)
+
+        if figPath != None:
+            self.appRef.window[PLOT_IMAGE_KEY].update(figPath)
 
     def create_figure(self) -> None:
         fig = matplotlib.figure.Figure(figsize=(5, 4), dpi=100)

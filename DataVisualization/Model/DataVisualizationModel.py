@@ -2,11 +2,38 @@ from matplotlib import pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 import io
 
+from Core.Analytics.Analyzer import Analyzer
+from Core.Util import *
+from Core.Logging.Logger import *
+from Core.Logging.LogSeverity import LogSeverity
+
 
 class DataVisualizationModel:
     def __init__(self, viewModelRef) -> None:
         self.viewModelRef = viewModelRef
         pass
+
+    def AnalyzeData(self, filePath) -> str:
+        """
+        Tries to analyze data based on the given file path
+
+        ## Output
+        Path to plot figure. None if invalid analysis. 
+        """
+
+        if not IsValidFilePath(filePath):
+            Log("Invalid File Path Given", "User gave a possible invalid file path, {}.".format(filePath), LogSeverity.WARNING)
+            return None
+
+        savePath = GetDirectoryFromFilePath(filePath)
+        # TODO: Generate plot name
+        savePath = os.path.join(savePath, "PLOT_IMG.png")
+
+        dataAnalyzer = Analyzer(filePath, savePath)
+
+        if dataAnalyzer.AnalyzeData():
+           return savePath 
+        return None
 
     def draw_figure(self, figure):
         plt.close('all')  # erases previously drawn plots

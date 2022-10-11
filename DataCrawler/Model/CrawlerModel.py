@@ -7,6 +7,7 @@ from Core.Crawling.CrawlTarget import CrawlTarget
 from Core.Logging.Logger import *
 from Core.Crawling.Crawler import Crawler
 from Core.Database import Database
+from Core.Util import IsValidFilePath
 
 class CrawlerModel:
     def __init__(self, viewModelRef) -> None:
@@ -42,15 +43,12 @@ class CrawlerModel:
                 return not taskThread.isRunning
 #endregion
 
-        print("run")
-        invalidArgs = False
         # Check if Save Location exists
-        if not saveLocation.strip():
-            self.viewModelRef.ShowUserMessage("Folder Path should not be empty!")
-            invalidArgs = True
-        elif not os.path.isdir(saveLocation):
-            self.viewModelRef.ShowUserMessage("Path to folder does not exists!")
-            invalidArgs = True
+        invalidArgs = not IsValidFilePath(saveLocation)
+        if invalidArgs:
+            self.viewModelRef.ShowUserMessage("Path to Save data at is invalid.")
+            FreeThread()
+            return None
 
         crawlTarget = CrawlerModel._GetCrawlTarget(targetCrawlSite)
         # Load target Site and Headers from configuration.

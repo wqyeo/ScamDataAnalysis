@@ -1,7 +1,5 @@
 import os
-
-from operator import truediv
-
+from pathlib import Path
 
 def IsEmptyOrWhitespace(string: str)-> bool:
     if string == None:
@@ -19,3 +17,14 @@ def IsValidFilePath(filePath: str) -> bool:
 
 def GetDirectoryFromFilePath(filePath: str) -> str:
     return os.path.dirname(os.path.abspath(filePath))
+
+def GetFileNameFromPath(filePath: str, withExtension: bool = False) -> str:
+    if withExtension:
+        return Path(filePath).name
+    return Path(filePath).stem
+
+def CreateToPath(filePath: str) -> bool:
+    if not os.path.exists(filePath):
+        os.makedirs(filePath)
+        return True
+    return False

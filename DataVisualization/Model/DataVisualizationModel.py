@@ -25,14 +25,11 @@ class DataVisualizationModel:
             Log("Invalid File Path Given", "User gave a possible invalid file path, {}.".format(filePath), LogSeverity.WARNING)
             return None
 
-        savePath = GetDirectoryFromFilePath(filePath)
-        # TODO: Generate plot name
-        savePath = os.path.join(savePath, "PLOT_IMG.png")
+        dataAnalyzer = Analyzer(filePath)
 
-        dataAnalyzer = Analyzer(filePath, savePath)
-
+        # TODO: Show figures
         if dataAnalyzer.AnalyzeData():
-           return savePath 
+           return None
         return None
 
     def draw_figure(self, figure):

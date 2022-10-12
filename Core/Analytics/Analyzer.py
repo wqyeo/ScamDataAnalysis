@@ -1,5 +1,6 @@
 import json
 import matplotlib.pyplot as plt
+from Core.Charting.Chart import Chart
 
 from Core.Util import *
 from Core.Analytics.DataType import DataType
@@ -13,7 +14,7 @@ class Analyzer:
         self._fileName = GetFileNameFromPath(filePath)
         self._outputPath = self._CreateFolderPath()
 
-    def AnalyzeData(self) -> bool:
+    def AnalyzeData(self) -> str:
 #region Local_Functions
         def truncateKeys(datecount, length):
             return dict((k[6:length], v) for k, v in datecount.items())
@@ -40,43 +41,18 @@ class Analyzer:
                 raise Exception("Invalid JSON Data")
         except:
             Log("Error Convering Json File", "Error Converting JSON File from path {}.".format(self.filePath), LogSeverity.WARNING)
-            return False
+            return None
 
+        analyzeData = None
         if dataType == DataType.SCAM_ALERT_STORIES:
-            return self._CrawlScamAlertStories(jsonData)
+            analyzeData = self._CrawlScamAlertStories(jsonData)
 
-        dateData = []
-        for data in jsonData:
-            if 'Date' in data:
-                dateData.append(data["Date"])
+        if analyzeData != None:
+            chartPaths = os.path.join(self._outputPath, "charts")
+            chart = Chart(chartPaths, analyzeData, dataType)
+            return chart.Plot()
+        return None
 
-        dateCount = {}
-        for i in dateData:
-            t = dateCount.get(i, 0) + 1
-            dateCount[i] = t
-        dateCount = dict(sorted(dateCount.items()))
-
-        shortendate = truncateKeys(dateCount, -4)
-
-        # TODO: Find a way to output plot
-        # Plotting
-        xAxis = [key for key, value in shortendate.items()]
-        yAxis = [value for key, value in shortendate.items()]
-        plt.grid(True)
-
-        ## LINE GRAPH ##
-        plt.plot(xAxis, yAxis, color='maroon', marker='o')
-        plt.xlabel('Date')
-        plt.ylabel('Number of Scam Cases')
-
-        ## BAR GRAPH ##
-        # fig = plt.figure()
-        # plt.bar(xAxis, yAxis, color='maroon')
-        # plt.xlabel('Date')
-        # plt.ylabel('Number of Scam Cases')
-
-        plt.savefig(self.outputPath)
-        return True
 
     def _CreateFolderPath(self) -> str:
         path = GetDirectoryFromFilePath(self.filePath)
@@ -119,4 +95,4 @@ class Analyzer:
         fileName = "Data.json"
         savePath = os.path.join(self._outputPath, fileName)
         Database.SaveJsonData(resultData, savePath)
-        return True
+        return resultData

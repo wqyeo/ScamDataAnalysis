@@ -28,10 +28,8 @@ class DataVisualizationModel:
         dataAnalyzer = Analyzer(filePath)
 
         # TODO: Show figures
-        if dataAnalyzer.AnalyzeData():
-           return None
-        return None
-
+        figurePath = dataAnalyzer.AnalyzeData()
+        return figurePath
     def draw_figure(self, figure):
         plt.close('all')  # erases previously drawn plots
         canv = FigureCanvasAgg(figure)

@@ -1,5 +1,7 @@
+from turtle import st
 from matplotlib import pyplot as plt
 
+from Core.Util import *
 from Core.Logging.Logger import *
 from Core.Analytics.DataType import DataType
 
@@ -8,20 +10,33 @@ class Chart:
         self.savePath = savePath
         self.jsonData = jsonData
         self.dataType = dataType
+
+        self._plotPoints = None
+        self._yLabels = None
+        self._xLabels = None
         pass
 
-    def Plot(self):
+    def Plot(self) -> str:
         if self.dataType == DataType.SCAM_ALERT_STORIES:
-            self._PlotScamAlertStories()
-    
+            return self._PlotScamAlertStories()
+        return None
 
-    def _PlotScamAlertStories(self):
+    def _PlotScamAlertStories(self) -> str:
 #region Local_Functions
+        def SortDateString(dateStr: str):
+            dateStr = dateStr.split(" ")
+            year = int(dateStr[0])
+            month = Chart._MonthStrToInt(dateStr[1])
+            day = int(dateStr[2])
+
+            return (year * 12 * 30) + (month * 30) + day
+
         def GeneratePlotPointDict() -> dict:
             # NOTE: Key is X-axis, Values are Y-axis
             res = {}
 
             datesData = self.jsonData["Dates"]
+            self._xLabels = []
             for year in datesData:
                 for month in datesData[year]:
                     for day in datesData[year][month]:
@@ -29,38 +44,67 @@ class Chart:
                         dateVal = (int(year) * 12 * 30) + (Chart._MonthStrToInt(month) * 30) + day
                         countVal = res.get(dateVal, 0) + 1
                         res[dateVal] = countVal
+                        self._xLabels.append("{y} {m} {d}".format(y=year, m=month, d=str(day)))
+            self._xLabels = sorted(self._xLabels, key=SortDateString)
             return res
 
 #endregion
 
-        plotPoints = Chart._NormalizePlotPoints(GeneratePlotPointDict())
+        self._plotPoints = Chart._NormalizePlotPoints(GeneratePlotPointDict())
+
+        xPoints = []
+        yPoints = []
+        for item in self._plotPoints.items():
+            xPoints.append(item[0])
+            yPoints.append(item[1])
+
+        plt.plot(xPoints, yPoints)
+        ax = plt.axes()
+        
+        xLabels = xPoints
+        if self._xLabels != None:
+            xLabels = self._xLabels
+        ax.set_xticklabels(xLabels)
+        yLabels = yPoints
+        if self._yLabels != None:
+            yLabels = self._yLabels
+        ax.set_yticklabels(yLabels)
+
+        ax.set_xticks(ax.get_xticks()[::3])
+
+        CreateToPath(self.savePath)
+
+        fileName = "DateData.png"
+        filePath = os.path.join(self.savePath, fileName)
+        plt.savefig(filePath)
+        return filePath
 
     def _MonthStrToInt(monthStr: str) -> int:
         monthStr = monthStr.lower()
 
-        if monthStr == "Jan":
+        if monthStr == "jan":
             return 1
-        elif monthStr == "Feb":
+        elif monthStr == "feb":
             return 2
-        elif monthStr == "Mar":
+        elif monthStr == "mar":
             return 3
-        elif monthStr == "Apr":
+        elif monthStr == "apr":
             return 4
-        elif monthStr == "May":
+        elif monthStr == "may":
             return 5
-        elif monthStr == "Jun":
+        elif monthStr == "jun":
             return 6
-        elif monthStr == "Jul":
+        elif monthStr == "jul":
             return 7
-        elif monthStr == "Aug":
+        elif monthStr == "aug":
             return 8
-        elif monthStr == "Sep":
+        elif monthStr == "sep":
             return 9
-        elif monthStr == "Oct":
+        elif monthStr == "oct":
             return 10
-        elif monthStr == "Nov":
+        elif monthStr == "nov":
             return 11
-        elif monthStr == "Dec":
+        elif monthStr == "dec":
             return 12
         Log("Failure convert Month String to Int", "Unable to convert the following month string to integer: {}".format(monthStr), LogSeverity.WARNING)
         return 0

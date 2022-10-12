@@ -29,7 +29,7 @@ def CreateToPath(filePath: str) -> bool:
         return True
     return False
 
-def SortedInsert(list: list, toInsert, comparisonFunc: function) -> list:
+def SortedInsert(list: list, toInsert, comparisonFunc) -> list:
     index = len(list)
 
     # Find the index to insert into

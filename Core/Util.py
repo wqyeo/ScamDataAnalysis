@@ -28,3 +28,19 @@ def CreateToPath(filePath: str) -> bool:
         os.makedirs(filePath)
         return True
     return False
+
+def SortedInsert(list: list, toInsert, comparisonFunc: function) -> list:
+    index = len(list)
+
+    # Find the index to insert into
+    for i in range(len(list)):
+      if comparisonFunc(list[i], toInsert):
+        index = i
+        break
+ 
+    # Then insert
+    if index == len(list):
+      list = list[:index] + [toInsert]
+    else:
+      list = list[:index] + [toInsert] + list[index:]
+    return list

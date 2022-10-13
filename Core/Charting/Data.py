@@ -15,6 +15,9 @@ class Data:
             self._AppendDate(data)
             pass
 
+    def Size(self) -> int:
+        return len(self.points)
+
     def _AppendDate(self, date):
 #region Local_Function
         def GetDateRawValue(dateStr: str) -> int:

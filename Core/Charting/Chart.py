@@ -1,7 +1,8 @@
 from Core.Charting.ChartConfigs.PlotConfig import PlotConfig
+from Core.Charting.ChartConfigs.FigureSize import FigureSize
 from Core.Charting.DataCategory import DataCategory
-from Core.Charting.Data import Data
 from Core.Charting.Charts.LineChart import LineChart
+from Core.Charting.Data import Data
 from Core.Charting.Plotter import *
 
 from Core.Util import *
@@ -28,9 +29,13 @@ class Chart:
 
     def _PlotScamAlertStories(self) -> None:
 #region Local_Function
-        def GenerateConfiguration() -> VisualChartConfig:
-            pltConfig = PlotConfig(10)
-            return VisualChartConfig(plotConfig= pltConfig)
+        def GenerateConfiguration(data: Data) -> VisualChartConfig:
+            if data.Size() <= 10:
+                return None
+
+            figSize = FigureSize(6, 6)
+            pltConfig = PlotConfig(data.Size() // 10, xRotation="vertical")
+            return VisualChartConfig(plotConfig= pltConfig, figureSize=figSize)
 
         def SortDate(date):
             dateStr = date.split(" ")
@@ -49,4 +54,4 @@ class Chart:
 
         lineChart = LineChart("Scam Over Time", dataPoints)
         filePath = os.path.join(self.savePath, "dateFig.png")
-        PlotChart(lineChart, filePath, GenerateConfiguration())
+        PlotChart(lineChart, filePath, GenerateConfiguration(dataPoints))

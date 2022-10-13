@@ -1,4 +1,5 @@
 import linecache
+from re import T
 import matplotlib.pyplot as plt
 
 from Core.Charting.Charts.VisualChart import VisualChart
@@ -39,25 +40,31 @@ def _PrintLineChart(lineChart: LineChart, outputPath: str, chartConfig: VisualCh
         ax = plt.gca()
         useDefaultX = True
         useDefaultY = True
+
+        xRotation = "horizontal"
+        yRotation = "horizontal"
         if not chartConfig == None:
             if not chartConfig.plotConfig == None:
                 xIntervals = chartConfig.plotConfig.xTickIntervals
                 yIntervals = chartConfig.plotConfig.yTickIntervals
+
+                xRotation = chartConfig.plotConfig.xRotation
+                yRotation = chartConfig.plotConfig.yRotation
                 if xIntervals >= 1:
                     ax.set_xticks(lineChart.xValues[::xIntervals])
-                    ax.set_xticklabels(lineChart.xLabels[::xIntervals])
+                    ax.set_xticklabels(lineChart.xLabels[::xIntervals], rotation=xRotation)
                     useDefaultX = False
                 if yIntervals >= 1:
                     ax.set_yticks(lineChart.yValues[::yIntervals])
-                    ax.set_yticklabels(lineChart.yLabels[::yIntervals])
+                    ax.set_yticklabels(lineChart.yLabels[::yIntervals], rotation=yRotation)
                     useDefaultY = False
 
         if useDefaultX:
             ax.set_xticks(lineChart.xValues)
-            ax.set_xticklabels(lineChart.xLabels)
+            ax.set_xticklabels(lineChart.xLabels, rotation=xRotation)
         if useDefaultY:
             ax.set_yticks(lineChart.yValues)
-            ax.set_yticklabels(lineChart.yLabels)
+            ax.set_yticklabels(lineChart.yLabels, rotation=yRotation)
 #endregion
 
     plt.plot(lineChart.xValues, lineChart.yValues)
@@ -65,4 +72,5 @@ def _PrintLineChart(lineChart: LineChart, outputPath: str, chartConfig: VisualCh
     plt.title(lineChart.title)
     SetChartTicks()
 
+    plt.tight_layout()
     plt.savefig(outputPath)

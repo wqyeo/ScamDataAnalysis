@@ -8,8 +8,9 @@ from Core.Logging.LogSeverity import LogSeverity
 from Core.Logging.Logger import DumpInfo, Log
 
 class Analyzer:
-    def __init__(self, filePath: str) -> None:
+    def __init__(self, filePath: str, appModelRef) -> None:
         self.filePath = filePath
+        self._appModelRef = appModelRef
         self._fileName = GetFileNameFromPath(filePath)
         self._outputPath = self._CreateFolderPath()
 
@@ -48,6 +49,7 @@ class Analyzer:
 
         analyzeData = None
         if dataType == DataType.SCAM_ALERT_STORIES:
+            self._appModelRef.ShowUserMessage("NOTE: Crawling Undetailed Data.\nThere will be lesser data generated.\nTo generate more data, use the deep data crawler on this current data and perform analysis on it.")
             analyzeData = self._CrawlScamAlertStories(jsonData)
 
         chartPaths = os.path.join(self._outputPath, "charts")
@@ -59,6 +61,7 @@ class Analyzer:
                     t = os.path.join(chartPaths, file)
                     figuresPath.append(t)
             return figuresPath
+        self._appModelRef.ShowUserMessage("The Data given is either invalid or doesn't exists.")
         return None
 
     def _CreateFolderPath(self) -> str:

@@ -28,6 +28,10 @@ class Chart:
         return False
 
     def _PlotScamAlertStories(self) -> None:
+        self._PlotScamOverTime()
+        self._PlotScamByDates()
+
+    def _PlotScamOverTime(self):
 #region Local_Function
         def GenerateConfiguration(data: Data) -> VisualChartConfig:
             if data.Size() <= 10:
@@ -36,22 +40,42 @@ class Chart:
             figSize = FigureSize(6, 6)
             pltConfig = PlotConfig(data.Size() // 10, data.Size() // 10, xRotation="vertical")
             return VisualChartConfig(plotConfig= pltConfig, figureSize=figSize)
-
-        def SortDate(date):
-            dateStr = date.split(" ")
-            year = int(dateStr[2])
-            month = MonthStrToInt(dateStr[1])
-            day = int(dateStr[0])
-
-            return (year * 12 * 30) + (month * 30) + day
 #endregion
 
-        dates = sorted(self.analyzedData["Dates"], key=SortDate)
+        dates = sorted(self.analyzedData["Dates"], key=Chart._SortDate)
         dataPoints = Data(DataCategory.DATE_OVER_TIME)
 
         for date in dates:
             dataPoints.AppendData(date)
 
         lineChart = LineChart("Scam Over Time", dataPoints)
-        filePath = os.path.join(self.savePath, "dateFig.png")
+        filePath = os.path.join(self.savePath, "Scam_Over_Time.png")
         PlotChart(lineChart, filePath, GenerateConfiguration(dataPoints))
+
+    def _PlotScamByDates(self):
+#region Local_Function
+        def GenerateConfiguration(data: Data) -> VisualChartConfig:
+            if data.Size() <= 10:
+                return None
+
+            figSize = FigureSize(6, 6)
+            pltConfig = PlotConfig(data.Size() // 10, data.Size() // 10, xRotation="vertical")
+            return VisualChartConfig(plotConfig= pltConfig, figureSize=figSize)
+#endregion
+        dates = sorted(self.analyzedData["Dates"], key=Chart._SortDate)
+        dataPoints = Data(DataCategory.DATE)
+
+        for date in dates:
+            dataPoints.AppendData(date)
+
+        lineChart = LineChart("Scam By Date", dataPoints)
+        filePath = os.path.join(self.savePath, "Scam_By_Date.png")
+        PlotChart(lineChart, filePath, GenerateConfiguration(dataPoints))
+
+    def _SortDate(date):
+        dateStr = date.split(" ")
+        year = int(dateStr[2])
+        month = MonthStrToInt(dateStr[1])
+        day = int(dateStr[0])
+
+        return (year * 12 * 30) + (month * 30) + day

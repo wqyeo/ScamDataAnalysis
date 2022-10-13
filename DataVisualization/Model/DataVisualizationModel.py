@@ -25,18 +25,10 @@ class DataVisualizationModel:
             Log("Invalid File Path Given", "User gave a possible invalid file path, {}.".format(filePath), LogSeverity.WARNING)
             return None
 
-        dataAnalyzer = Analyzer(filePath)
+        dataAnalyzer = Analyzer(filePath, self)
 
         figurePath = dataAnalyzer.AnalyzeData()
         return figurePath
 
-    def draw_figure(self, figure):
-        plt.close('all')  # erases previously drawn plots
-        canv = FigureCanvasAgg(figure)
-        buf = io.BytesIO()
-        canv.print_figure(buf, format='png')
-        if buf is None:
-            return None
-        buf.seek(0)
-        self.update(data=buf.read())
-        return canv
+    def ShowUserMessage(self, message: str) -> None:
+        self.viewModelRef.ShowUserMessage(message)

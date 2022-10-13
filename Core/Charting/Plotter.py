@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 
 from Core.Charting.Charts.VisualChart import VisualChart
 from Core.Charting.Charts.LineChart import LineChart
+from Core.Charting.Charts.PieChart import PieChart
 from Core.Logging.LogSeverity import LogSeverity
 from Core.Logging.Logger import Log
 
@@ -21,9 +22,16 @@ def PlotChart(visualChart: VisualChart,  outputPath: str, chartConfig: VisualCha
 
     if isinstance(visualChart, LineChart):
         _PrintLineChart(visualChart, outputPath, chartConfig)
+    elif isinstance(visualChart, PieChart):
+        _PrintPieChart(visualChart, outputPath, chartConfig)
     else:
         Log("Unknown Visual Chart Type", "Unknown Visual Chart Type given to ouput to {}".format(outputPath), LogSeverity.WARNING)
 
+def _PrintPieChart(pieChart: PieChart, outputPath: str, chartConfig: VisualChartConfig) -> None:
+    plt.pie(pieChart.values, labels=pieChart.labels)
+    plt.title(pieChart.title)
+    plt.tight_layout()
+    plt.savefig(outputPath)
 
 def _PrintLineChart(lineChart: LineChart, outputPath: str, chartConfig: VisualChartConfig) -> None:
 #region Local_Functions

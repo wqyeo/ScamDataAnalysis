@@ -1,5 +1,4 @@
 import json
-from logging import logMultiprocessing
 from Core.Charting.Chart import Chart
 
 from Core.Util import *
@@ -9,12 +8,13 @@ from Core.Logging.LogSeverity import LogSeverity
 from Core.Logging.Logger import DumpInfo, Log
 
 class Analyzer:
-    def __init__(self, filePath: str) -> None:
+    def __init__(self, filePath: str, appModelRef) -> None:
         self.filePath = filePath
+        self._appModelRef = appModelRef
         self._fileName = GetFileNameFromPath(filePath)
         self._outputPath = self._CreateFolderPath()
 
-    def AnalyzeData(self) -> logMultiprocessing:
+    def AnalyzeData(self):
 #region Local_Functions
         def GetAnalyzeDataType(data) -> DataType:
             for d in data:
@@ -35,10 +35,6 @@ class Analyzer:
         jsonData = None
         try:
             jsonData = Database.OpenJsonData(self.filePath)
-
-            # TODO: Allow loading from other data types
-            if not ('Stories' in jsonData):
-                raise Exception("JSON Format Invalid")
             
             dataType = GetAnalyzeDataType(jsonData)
             if dataType == None:
@@ -49,7 +45,11 @@ class Analyzer:
 
         analyzeData = None
         if dataType == DataType.SCAM_ALERT_STORIES:
-            analyzeData = self._CrawlScamAlertStories(jsonData)
+            self._appModelRef.ShowUserMessage("NOTE: Crawling Undetailed Data.\nThere will be lesser data generated.\nTo generate more data, use the deep data crawler on this current data and perform analysis on it.")
+            analyzeData = self._BundleScamAlertStories(jsonData)
+        elif dataType == DataType.DETAILED_SCAM_ALERT_STORIES:
+            self._appModelRef.ShowUserMessage("")
+            analyzeData = self._BundleDetailedScamAlertStories(jsonData)
 
         chartPaths = os.path.join(self._outputPath, "charts")
         if PlotData(analyzeData, dataType, chartPaths):
@@ -60,6 +60,7 @@ class Analyzer:
                     t = os.path.join(chartPaths, file)
                     figuresPath.append(t)
             return figuresPath
+        self._appModelRef.ShowUserMessage("The Data given is either invalid or doesn't exists.")
         return None
 
     def _CreateFolderPath(self) -> str:
@@ -68,7 +69,43 @@ class Analyzer:
         CreateToPath(path)
         return path
 
-    def _CrawlScamAlertStories(self, jsonData) -> dict:
+    def _BundleDetailedScamAlertStories(self, jsonData) -> dict:
+
+        jsonData = jsonData["DetailedStories"]
+
+        resultData = {
+            "Dates": [],
+            "ScamTypes": []
+        }
+
+        for data in jsonData:
+            titleAuthor = data.get("TitleAuthor", {})
+            body = data.get("Body", {})
+
+            warnMissingData = False
+            if "Date" in titleAuthor:
+                dateStr = titleAuthor["Date"]
+                resultData["Dates"].append(dateStr)
+            else:
+                warnMissingData = True
+
+            if "ScamType" in body:
+                scamTypes = body["ScamType"]
+                if isinstance(scamTypes, list):
+                    # This data is in multiple scam category
+                    for scamType in scamTypes:
+                        resultData["ScamTypes"].append(scamType)
+                else:
+                    resultData["ScamTypes"].append(scamTypes)
+            else:
+                warnMissingData = True
+
+            if warnMissingData:
+                dumpPath = DumpInfo(json.dumps(data), LogSeverity.WARNING)
+                Log("Missing Data in given JSON", "Missing data in user given JSON, more Info at {}".format(dumpPath), LogSeverity.WARNING)
+        return resultData
+
+    def _BundleScamAlertStories(self, jsonData) -> dict:
 
         jsonData = jsonData["Stories"]
 

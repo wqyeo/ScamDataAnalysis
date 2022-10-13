@@ -8,10 +8,10 @@ class LineChart(VisualChart):
         self.xLabels = []
         self.yLabels = []
         
-        self.UnpackData(data)
+        self._UnpackData(data)
         super().__init__(title)
 
-    def UnpackData(self, data: Data):
+    def _UnpackData(self, data: Data):
         for point in data.points:
             self.xValues.append(point.xValue)
             self.yValues.append(point.yValue)

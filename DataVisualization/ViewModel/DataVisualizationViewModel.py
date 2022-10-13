@@ -1,6 +1,6 @@
-import numpy as np
 import matplotlib.figure
 import matplotlib.pyplot as plt
+from Core.Util import *
 
 from DataVisualization.Model.DataVisualizationModel import DataVisualizationModel
 from DataVisualization.View.DataVisualizationView import *
@@ -10,32 +10,43 @@ class DataVisualizationViewModel:
         self.appRef = appRef
         self.model = DataVisualizationModel(self)
 
-        self._figuresPath = []
+        self._appWindow = appRef.window
+        self._figurePathBindings = {}
+        self._lastFigure = ""
 
     def Update(self, event, value):
         if event == START_ANALYZE_EVENT:
             self._AnalyzeEvent()
 
+        imageSelection = self._appWindow[PLOT_IMAGES_SELECTOR_KEY].get()
+        self._UpdateFigure(imageSelection)
+
     def _AnalyzeEvent(self):
+#region Local_Function
+        def BindFigurePaths(plotPaths: list) -> None:
+            self._figurePathBindings = {}
+            for path in plotPaths:
+                name = GetFileNameFromPath(path)
+                self._figurePathBindings[name.replace("_", " ")] = path
+#endregion
+
         targetFilePath = self.appRef.window[TARGET_FILE_LOCATION_KEY].get()
-        self._figuresPath = self.model.AnalyzeData(targetFilePath)
+        figurePaths = self.model.AnalyzeData(targetFilePath)
 
-        if self._figuresPath != None:
-            self.appRef.window[PLOT_IMAGE_KEY].update(self._figuresPath[0])
+        if figurePaths != None:
+            BindFigurePaths(figurePaths)
+            figureNames = list(self._figurePathBindings.keys())
+            self._UpdateFigure(figureNames[0], True)
+            self._appWindow[PLOT_IMAGES_SELECTOR_KEY].update(values=figureNames, visible=True)
 
-    def create_figure(self) -> None:
-        fig = matplotlib.figure.Figure(figsize=(5, 4), dpi=100)
-        fig = matplotlib.figure.Figure(figsize=(5, 4), dpi=100)
-        t = np.arange(0, 3, .01)
-        fig.add_subplot(111).plot(t, 2 * np.sin(2 * np.pi * t))
+    def _UpdateFigure(self, figName, ignoreLast = False) -> None:
+        if figName in self._figurePathBindings:
+            if figName != self._lastFigure and not ignoreLast:
+                self._lastFigure = figName
+                self._appWindow[PLOT_IMAGE_KEY].update(self._figurePathBindings[figName])
+            elif ignoreLast:
+                self._lastFigure = figName
+                self._appWindow[PLOT_IMAGE_KEY].update(self._figurePathBindings[figName])
 
-    def create_pie(self) -> None:
-        # ------------------------------- START OF YOUR MATPLOTLIB CODE -------------------------------
-        labels = 'Frogs', 'Hogs', 'Dogs', 'Logs'
-        sizes = [15, 30, 45, 10]
-        explode = (0, 0.1, 0, 0)  # only "explode" the 2nd slice (i.e. 'Hogs')
-
-        fig1, ax1 = plt.subplots()
-        ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
-                shadow=True, startangle=90)
-        ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+    def ShowUserMessage(self, message: str) -> None:
+        self._appWindow[USER_MESSAGE_KEY].update(message)

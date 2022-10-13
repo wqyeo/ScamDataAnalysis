@@ -36,7 +36,6 @@ def _RunMainWindow(mainThread: Thread, mainAsyncLoop: AbstractEventLoop) -> None
 
     appWindow.close()
 
-
 def _RunApplication(app) -> None:
     while app.isOpen:
         app.Update()

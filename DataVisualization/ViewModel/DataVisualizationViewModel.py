@@ -10,16 +10,18 @@ class DataVisualizationViewModel:
         self.appRef = appRef
         self.model = DataVisualizationModel(self)
 
+        self._figuresPath = []
+
     def Update(self, event, value):
         if event == START_ANALYZE_EVENT:
             self._AnalyzeEvent()
 
     def _AnalyzeEvent(self):
         targetFilePath = self.appRef.window[TARGET_FILE_LOCATION_KEY].get()
-        figPath = self.model.AnalyzeData(targetFilePath)
+        self._figuresPath = self.model.AnalyzeData(targetFilePath)
 
-        if figPath != None:
-            self.appRef.window[PLOT_IMAGE_KEY].update(figPath)
+        if self._figuresPath != None:
+            self.appRef.window[PLOT_IMAGE_KEY].update(self._figuresPath[0])
 
     def create_figure(self) -> None:
         fig = matplotlib.figure.Figure(figsize=(5, 4), dpi=100)

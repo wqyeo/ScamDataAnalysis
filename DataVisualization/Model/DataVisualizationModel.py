@@ -13,27 +13,22 @@ class DataVisualizationModel:
         self.viewModelRef = viewModelRef
         pass
 
-    def AnalyzeData(self, filePath) -> str:
+    def AnalyzeData(self, filePath) -> list:
         """
         Tries to analyze data based on the given file path
 
         ## Output
-        Path to plot figure. None if invalid analysis. 
+        List of paths to plot figure. None if invalid analysis. 
         """
 
         if not IsValidFilePath(filePath):
             Log("Invalid File Path Given", "User gave a possible invalid file path, {}.".format(filePath), LogSeverity.WARNING)
             return None
 
-        savePath = GetDirectoryFromFilePath(filePath)
-        # TODO: Generate plot name
-        savePath = os.path.join(savePath, "PLOT_IMG.png")
+        dataAnalyzer = Analyzer(filePath)
 
-        dataAnalyzer = Analyzer(filePath, savePath)
-
-        if dataAnalyzer.AnalyzeData():
-           return savePath 
-        return None
+        figurePath = dataAnalyzer.AnalyzeData()
+        return figurePath
 
     def draw_figure(self, figure):
         plt.close('all')  # erases previously drawn plots

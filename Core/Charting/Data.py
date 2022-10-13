@@ -8,28 +8,36 @@ class Data:
     def __init__(self, dataCategory: DataCategory):
         self.dataCategory = dataCategory
         self.points = []
+        
         self._normalizedDiff = None
+        self._cumulative = 0
 
     def AppendData(self, data):
         if self.dataCategory == DataCategory.DATE:
             self._AppendDate(data)
-            pass
+        elif self.dataCategory == DataCategory.DATE_OVER_TIME:
+            self._AppendDateOverTime(data)
 
     def Size(self) -> int:
         return len(self.points)
 
-    def _AppendDate(self, date):
-#region Local_Function
-        def GetDateRawValue(dateStr: str) -> int:
-            dateStr = dateStr.split()
+    def _AppendDateOverTime(self, date):
+        self._cumulative += 1
         
-            year = int(dateStr[2])
-            month = MonthStrToInt(dateStr[1])
-            day = int(dateStr[0])
-            return (year * 30 * 12) + (month * 30) + day
-#endregion
+        rawValue = Data._GetDateRawValue(date)
+        if self._normalizedDiff == None:
+            self._normalizedDiff = rawValue - 1
+        rawValue = rawValue - self._normalizedDiff
 
-        rawValue = GetDateRawValue(date)
+        point = self._FindPointByX(rawValue)
+        if point == None:
+            point = Point(rawValue, self._cumulative, xLabel=date)
+            self.points.append(point)
+        else:
+            point.yValue = self._cumulative
+
+    def _AppendDate(self, date):
+        rawValue = Data._GetDateRawValue(date)
         if self._normalizedDiff == None:
             self._normalizedDiff = rawValue - 1
         rawValue = rawValue - self._normalizedDiff
@@ -46,3 +54,11 @@ class Data:
             if p.xValue == xValue:
                 return p
         return None
+
+    def _GetDateRawValue(dateStr: str) -> int:
+        dateStr = dateStr.split()
+    
+        year = int(dateStr[2])
+        month = MonthStrToInt(dateStr[1])
+        day = int(dateStr[0])
+        return (year * 30 * 12) + (month * 30) + day

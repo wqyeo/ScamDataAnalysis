@@ -1,5 +1,4 @@
 import json
-from logging import logMultiprocessing
 from Core.Charting.Chart import Chart
 
 from Core.Util import *
@@ -14,7 +13,7 @@ class Analyzer:
         self._fileName = GetFileNameFromPath(filePath)
         self._outputPath = self._CreateFolderPath()
 
-    def AnalyzeData(self) -> logMultiprocessing:
+    def AnalyzeData(self):
 #region Local_Functions
         def GetAnalyzeDataType(data) -> DataType:
             for d in data:

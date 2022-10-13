@@ -34,7 +34,7 @@ class Chart:
                 return None
 
             figSize = FigureSize(6, 6)
-            pltConfig = PlotConfig(data.Size() // 10, xRotation="vertical")
+            pltConfig = PlotConfig(data.Size() // 10, data.Size() // 10, xRotation="vertical")
             return VisualChartConfig(plotConfig= pltConfig, figureSize=figSize)
 
         def SortDate(date):
@@ -47,7 +47,7 @@ class Chart:
 #endregion
 
         dates = sorted(self.analyzedData["Dates"], key=SortDate)
-        dataPoints = Data(DataCategory.DATE)
+        dataPoints = Data(DataCategory.DATE_OVER_TIME)
 
         for date in dates:
             dataPoints.AppendData(date)

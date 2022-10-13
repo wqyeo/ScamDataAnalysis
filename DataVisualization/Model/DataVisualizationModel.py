@@ -1,7 +1,3 @@
-from matplotlib import pyplot as plt
-from matplotlib.backends.backend_agg import FigureCanvasAgg
-import io
-
 from Core.Analytics.Analyzer import Analyzer
 from Core.Util import *
 from Core.Logging.Logger import *

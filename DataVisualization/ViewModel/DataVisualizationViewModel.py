@@ -36,13 +36,17 @@ class DataVisualizationViewModel:
         if figurePaths != None:
             BindFigurePaths(figurePaths)
             figureNames = list(self._figurePathBindings.keys())
-            self._UpdateFigure(figureNames[0])
+            self._UpdateFigure(figureNames[0], True)
             self._appWindow[PLOT_IMAGES_SELECTOR_KEY].update(values=figureNames, visible=True)
 
-    def _UpdateFigure(self, figName) -> None:
-        if figName != self._lastFigure and figName in self._figurePathBindings:
-            self._lastFigure = figName
-            self._appWindow[PLOT_IMAGE_KEY].update(self._figurePathBindings[figName])
+    def _UpdateFigure(self, figName, ignoreLast = False) -> None:
+        if figName in self._figurePathBindings:
+            if figName != self._lastFigure and not ignoreLast:
+                self._lastFigure = figName
+                self._appWindow[PLOT_IMAGE_KEY].update(self._figurePathBindings[figName])
+            elif ignoreLast:
+                self._lastFigure = figName
+                self._appWindow[PLOT_IMAGE_KEY].update(self._figurePathBindings[figName])
 
     def ShowUserMessage(self, message: str) -> None:
         self._appWindow[USER_MESSAGE_KEY].update(message)

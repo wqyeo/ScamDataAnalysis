@@ -18,7 +18,7 @@ START_ANALYZE_EVENT = "Analyze"
 
 def CreateVisualizationViewLayout():
     leftColumn = [
-        [sg.T('File Location')],
+        [sg.T('Select Data File to Analyze:')],
                 [sg.InputText(size=(25, 1), key=TARGET_FILE_LOCATION_KEY), sg.FileBrowse(target=TARGET_FILE_LOCATION_KEY, file_types=(("JSON files", "*.json"),) )],
                 [sg.B(START_ANALYZE_EVENT)]
     ]
@@ -28,8 +28,9 @@ def CreateVisualizationViewLayout():
         [sg.Combo(values=["Very Very Long Box"], key = PLOT_IMAGES_SELECTOR_KEY, visible=False)]
     ]
 
-    layout = [[sg.T('Data Visualization', font='Any 20')],
-              [sg.Col(leftColumn), sg.Col(rightColumn)]
+    layout = [
+              [sg.Col(leftColumn), sg.Col(rightColumn)],
+              [sg.T("", key=USER_MESSAGE_KEY)]
               ]
 
     return layout

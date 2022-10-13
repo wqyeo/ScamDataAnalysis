@@ -25,20 +25,40 @@ class Chart:
         if self.dataType == DataType.SCAM_ALERT_STORIES:
             self._PlotScamAlertStories()
             return True
+        elif self.dataType == DataType.DETAILED_SCAM_ALERT_STORIES:
+            self._PlotDetailedScamAlertStories()
+            return True
         return False
 
     def _PlotScamAlertStories(self) -> None:
         self._PlotScamOverTime()
         self._PlotScamByDates()
 
+    def _PlotDetailedScamAlertStories(self) -> None:
+        self._PlotScamOverTime()
+        self._PlotScamByDates()
+        self._PlotScamTypes()
+
+    def _PlotScamTypes(self):
+        scamTypes = self.analyzedData["ScamTypes"]
+        dataPoints = Data(DataCategory.COUNTABLES)
+
+        for scamType in scamTypes:
+            dataPoints.AppendData(scamType)
+
+        pieChart = PieChart("Scam Types Occurance", dataPoints)
+        filePath = os.path.join(self.savePath, "Scam_Type_Occurance.png")
+        PlotChart(pieChart, filePath, None)
+
     def _PlotScamOverTime(self):
 #region Local_Function
         def GenerateConfiguration(data: Data) -> VisualChartConfig:
-            if data.Size() <= 10:
-                return None
+            intervals = -1
+            if data.Size() > 10:
+                intervals = data.Size() // 10
 
             figSize = FigureSize(6, 6)
-            pltConfig = PlotConfig(data.Size() // 10, data.Size() // 10, xRotation="vertical")
+            pltConfig = PlotConfig(intervals, intervals, xRotation="vertical")
             return VisualChartConfig(plotConfig= pltConfig, figureSize=figSize)
 #endregion
 
@@ -55,13 +75,15 @@ class Chart:
     def _PlotScamByDates(self):
 #region Local_Function
         def GenerateConfiguration(data: Data) -> VisualChartConfig:
-            if data.Size() <= 10:
-                return None
+            intervals = -1
+            if data.Size() > 10:
+                intervals = data.Size() // 10
 
             figSize = FigureSize(6, 6)
-            pltConfig = PlotConfig(data.Size() // 10, data.Size() // 10, xRotation="vertical")
+            pltConfig = PlotConfig(intervals, xRotation="vertical")
             return VisualChartConfig(plotConfig= pltConfig, figureSize=figSize)
 #endregion
+
         dates = sorted(self.analyzedData["Dates"], key=Chart._SortDate)
         dataPoints = Data(DataCategory.DATE)
 

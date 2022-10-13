@@ -35,10 +35,6 @@ class Analyzer:
         jsonData = None
         try:
             jsonData = Database.OpenJsonData(self.filePath)
-
-            # TODO: Allow loading from other data types
-            if not ('Stories' in jsonData):
-                raise Exception("JSON Format Invalid")
             
             dataType = GetAnalyzeDataType(jsonData)
             if dataType == None:
@@ -50,7 +46,10 @@ class Analyzer:
         analyzeData = None
         if dataType == DataType.SCAM_ALERT_STORIES:
             self._appModelRef.ShowUserMessage("NOTE: Crawling Undetailed Data.\nThere will be lesser data generated.\nTo generate more data, use the deep data crawler on this current data and perform analysis on it.")
-            analyzeData = self._CrawlScamAlertStories(jsonData)
+            analyzeData = self._BundleScamAlertStories(jsonData)
+        elif dataType == DataType.DETAILED_SCAM_ALERT_STORIES:
+            self._appModelRef.ShowUserMessage("")
+            analyzeData = self._BundleDetailedScamAlertStories(jsonData)
 
         chartPaths = os.path.join(self._outputPath, "charts")
         if PlotData(analyzeData, dataType, chartPaths):
@@ -70,7 +69,43 @@ class Analyzer:
         CreateToPath(path)
         return path
 
-    def _CrawlScamAlertStories(self, jsonData) -> dict:
+    def _BundleDetailedScamAlertStories(self, jsonData) -> dict:
+
+        jsonData = jsonData["DetailedStories"]
+
+        resultData = {
+            "Dates": [],
+            "ScamTypes": []
+        }
+
+        for data in jsonData:
+            titleAuthor = data.get("TitleAuthor", {})
+            body = data.get("Body", {})
+
+            warnMissingData = False
+            if "Date" in titleAuthor:
+                dateStr = titleAuthor["Date"]
+                resultData["Dates"].append(dateStr)
+            else:
+                warnMissingData = True
+
+            if "ScamType" in body:
+                scamTypes = body["ScamType"]
+                if isinstance(scamTypes, list):
+                    # This data is in multiple scam category
+                    for scamType in scamTypes:
+                        resultData["ScamTypes"].append(scamType)
+                else:
+                    resultData["ScamTypes"].append(scamTypes)
+            else:
+                warnMissingData = True
+
+            if warnMissingData:
+                dumpPath = DumpInfo(json.dumps(data), LogSeverity.WARNING)
+                Log("Missing Data in given JSON", "Missing data in user given JSON, more Info at {}".format(dumpPath), LogSeverity.WARNING)
+        return resultData
+
+    def _BundleScamAlertStories(self, jsonData) -> dict:
 
         jsonData = jsonData["Stories"]
 

@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 
+from Core.Logging.Logger import *
+
 def IsEmptyOrWhitespace(string: str)-> bool:
     if string == None:
         return True
@@ -44,3 +46,33 @@ def SortedInsert(list: list, toInsert, comparisonFunc) -> list:
     else:
       list = list[:index] + [toInsert] + list[index:]
     return list
+
+def MonthStrToInt(monthStr: str) -> int:
+    monthStr = monthStr.lower()
+
+    if monthStr == "jan":
+        return 1
+    elif monthStr == "feb":
+        return 2
+    elif monthStr == "mar":
+        return 3
+    elif monthStr == "apr":
+        return 4
+    elif monthStr == "may":
+        return 5
+    elif monthStr == "jun":
+        return 6
+    elif monthStr == "jul":
+        return 7
+    elif monthStr == "aug":
+        return 8
+    elif monthStr == "sep":
+        return 9
+    elif monthStr == "oct":
+        return 10
+    elif monthStr == "nov":
+        return 11
+    elif monthStr == "dec":
+        return 12
+    Log("Failure convert Month String to Int", "Unable to convert the following month string to integer: {}".format(monthStr), LogSeverity.WARNING)
+    return 0

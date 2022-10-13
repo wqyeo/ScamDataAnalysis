@@ -13,12 +13,12 @@ class DataVisualizationModel:
         self.viewModelRef = viewModelRef
         pass
 
-    def AnalyzeData(self, filePath) -> str:
+    def AnalyzeData(self, filePath) -> list:
         """
         Tries to analyze data based on the given file path
 
         ## Output
-        Path to plot figure. None if invalid analysis. 
+        List of paths to plot figure. None if invalid analysis. 
         """
 
         if not IsValidFilePath(filePath):
@@ -27,9 +27,9 @@ class DataVisualizationModel:
 
         dataAnalyzer = Analyzer(filePath)
 
-        # TODO: Show figures
         figurePath = dataAnalyzer.AnalyzeData()
         return figurePath
+
     def draw_figure(self, figure):
         plt.close('all')  # erases previously drawn plots
         canv = FigureCanvasAgg(figure)

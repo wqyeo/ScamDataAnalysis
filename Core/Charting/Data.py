@@ -70,7 +70,7 @@ class Data:
 
     def _FindPointByY(self, yValue: int) -> Point:
         for p in self.points:
-            if p.xValue == yValue:
+            if p.yValue == yValue:
                 return p
         return None
 

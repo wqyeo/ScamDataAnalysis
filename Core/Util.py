@@ -76,3 +76,6 @@ def MonthStrToInt(monthStr: str) -> int:
         return 12
     Log("Failure convert Month String to Int", "Unable to convert the following month string to integer: {}".format(monthStr), LogSeverity.WARNING)
     return 0
+
+def Lerp(a: float, b: float, c: float) -> float:
+    return (c * a) + ((1.0-c) * b)

@@ -17,6 +17,11 @@ def IsValidFilePath(filePath: str) -> bool:
         return False
     return True
 
+def IsValidDirectory(filePath: str) -> bool:
+    if not filePath.strip():
+        return False
+    return True
+
 def GetDirectoryFromFilePath(filePath: str) -> str:
     return os.path.dirname(os.path.abspath(filePath))
 

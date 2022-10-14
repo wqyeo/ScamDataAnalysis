@@ -7,12 +7,19 @@ from Core.Crawling.CrawlTarget import CrawlTarget
 from Core.Logging.Logger import *
 from Core.Crawling.Crawler import Crawler
 from Core.Database import Database
-from Core.Util import IsValidFilePath
+from Core.Util import IsValidDirectory
 
 class CrawlerModel:
     def __init__(self, viewModelRef) -> None:
         self.viewModelRef = viewModelRef
+        self._crawlingMessageCycle = 1
         pass
+
+    def _ShowCrawlingMessage(self):
+        self._crawlingMessageCycle += 1
+        if self._crawlingMessageCycle >= 4:
+            self._crawlingMessageCycle = 1
+        self.viewModelRef.ShowUserMessage("Crawling" + ("." * self._crawlingMessageCycle))
 
     @asyncio.coroutine
     def CrawlAndSaveData(self, saveLocation: str, recursiveTimes: int, targetCrawlSite: str, taskThread = None):
@@ -44,7 +51,7 @@ class CrawlerModel:
 #endregion
 
         # Check if Save Location exists
-        invalidArgs = not IsValidFilePath(saveLocation)
+        invalidArgs = not IsValidDirectory(saveLocation)
         if invalidArgs:
             self.viewModelRef.ShowUserMessage("Path to Save data at is invalid.")
             FreeThread()
@@ -66,9 +73,9 @@ class CrawlerModel:
         crawlSiteHeaders = crawlConfig["Headers"]
 
         jsonData = json.loads('{"Stories": []}')
-
         # Recursively crawl and fetch raw content (string)
         for pageNo in range(recursiveTimes):
+            self._ShowCrawlingMessage()
             # This thread stop signal is send
             if ThreadStopSignalled():
                 FreeThread()
@@ -85,19 +92,23 @@ class CrawlerModel:
             try:
                 contentArray = self._GetContentList(contentRaw, "StoryList")
             except:
-                infoFileName = DumpInfo(contentRaw)
+                infoFileName = DumpInfo(contentRaw, LogSeverity.WARNING)
                 message = "Error Fetching data at page: {pageNo}. More info at {fileName}.".format(pageNo=pageNo, fileName=infoFileName)
-                Log("Page Fetch Data Error", message, LogSeverity.ERROR)
+                Log("Page Fetch Data", message, LogSeverity.WARNING)
                 continue
 
             for content in contentArray:
+                # NOTE: Fixes some of the JSON file not ending with } properly.
+                if content[-1] != "}":
+                    content += "}"
+
                 # Try to read each content as JSON.
                 try:
                     tempJson = json.loads(content)
                 except:
-                    infoFileName = DumpInfo(content, LogSeverity.ERROR)
+                    infoFileName = DumpInfo(content, LogSeverity.WARNING)
                     message = "Error Converting one data to JSON at page: {pageNo}. More info at {fileName}.".format(pageNo=pageNo, fileName=infoFileName)
-                    Log("Data Convert Error", message, LogSeverity.ERROR)
+                    Log("Data Convert", message, LogSeverity.WARNING)
                     continue
 
                 jsonData["Stories"].append(tempJson)

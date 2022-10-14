@@ -7,22 +7,35 @@ from Core.Util import *
 
 class Data:
     def __init__(self, dataCategory: DataCategory):
+        """
+        **dataFilter**
+        A function that takes in data.
+        If true, the data will not be processed.
+        """
         self.dataCategory = dataCategory
         self.points = []
         
         self._normalizedDiff = None
         self._cumulative = 0
         self._countableMappings = {}
+        self.dataSize = 0
 
     def AppendData(self, data):
+
         if self.dataCategory == DataCategory.DATE:
             self._AppendDate(data)
         elif self.dataCategory == DataCategory.DATE_OVER_TIME:
             self._AppendDateOverTime(data)
         elif self.dataCategory == DataCategory.COUNTABLES:
             self._AppendCountable(data)
+        self.dataSize += 1
 
     def _AppendCountable(self, data):
+        if isinstance(data, list):
+            for d in data:
+                self._AppendCountable(d)
+                return None
+
         # NOTE: Y would be the value to count
         # X will be the number of occurance
         yValueMap = None

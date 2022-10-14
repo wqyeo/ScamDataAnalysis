@@ -16,7 +16,7 @@ class Chart:
         All data inside should be sorted from lowest-highest
         """
         self.savePath = savePath
-        self.analyzedData = analyzedData
+        self.analyzedData = sorted(analyzedData, key=Chart._GetRawDateValue)
         self.dataType = dataType
 
     def Plot(self) -> bool:
@@ -31,27 +31,53 @@ class Chart:
         return False
 
     def _PlotScamAlertStories(self) -> None:
-        self._PlotScamOverTime()
-        self._PlotScamByDates()
+        self._PlotScamOverTime("Scam_Over_Time")
+        #self._PlotScamByDates("Scam_By_Date")
+
+        for year in range(2018, 2023):
+            def YearFilter(data):
+                return Chart._GetRawDateValue(data) < (year * 12 * 30) or Chart._GetRawDateValue(data) > ((year + 1) * 12 * 30)
+
+            self._PlotScamOverTime("Scam_Over_Time_" + str(year), YearFilter)
+            #self._PlotScamByDates("Scam_By_Date_" + str(year), YearFilter)
 
     def _PlotDetailedScamAlertStories(self) -> None:
-        self._PlotScamOverTime()
-        self._PlotScamByDates()
-        self._PlotCountablePieChart("ScamTypes", "Scam Types Occurance", "Scam_Type_Occurance.png")
-        self._PlotCountablePieChart("PlatformTypes", "Scam Target Platforms", "Scam_Target_Platform.png")
+        figSize = FigureSize(6, 6)
+        pieChartConfig = VisualChartConfig(figureSize=figSize)
 
-    def _PlotCountablePieChart(self, key: str, title: str, imageName):
-        scamTypes = self.analyzedData[key]
+        self._PlotScamOverTime("Scam_Over_Time")
+        #self._PlotScamByDates("Scam_By_Date")
+        self._PlotCountablePieChart("ScamTypes", "Scam_Types_Occurance", pieChartConfig)
+        self._PlotCountablePieChart("PlatformTypes", "Scam_Target_Platforms", pieChartConfig)
+
+        legendConfig = LegendConfig(True)
+        pieChartConfig.legendConfig = legendConfig
+
+        for year in range(2019, 2022):
+            def YearFilter(data):
+                return Chart._GetRawDateValue(data) < (year * 12 * 30) or Chart._GetRawDateValue(data) > ((year + 1) * 12 * 30)
+
+            self._PlotScamOverTime("Scam_Over_Time_" + str(year), YearFilter)
+            #self._PlotScamByDates("Scam_By_Date_" + str(year), YearFilter)
+            self._PlotCountablePieChart("ScamTypes", "Scam_Types_Occurance_" + str(year), pieChartConfig, YearFilter)
+            self._PlotCountablePieChart("PlatformTypes", "Scam_Target_Platforms_" + str(year), pieChartConfig, YearFilter)
+
+    def _PlotCountablePieChart(self, key: str, fileName: str, chartConfig: VisualChartConfig = None, filter = None):
         dataPoints = Data(DataCategory.COUNTABLES)
 
-        for scamType in scamTypes:
-            dataPoints.AppendData(scamType)
+        for data in self.analyzedData:
+            if filter != None:
+                if filter(data):
+                    continue
+            toCount = data[key]
+            if toCount != None:
+                dataPoints.AppendData(toCount)
 
-        pieChart = PieChart(title, dataPoints)
-        filePath = os.path.join(self.savePath, imageName)
-        PlotChart(pieChart, filePath, None)
+        pieChart = PieChart(fileName.replace("_", " "), dataPoints)
+        filePath = os.path.join(self.savePath, fileName + ".png")
+        PlotChart(pieChart, filePath, chartConfig)
 
-    def _PlotScamOverTime(self):
+    def _PlotScamOverTime(self, fileName: str, filter = None):
 #region Local_Function
         def GenerateConfiguration(data: Data) -> VisualChartConfig:
             intervals = -1
@@ -63,17 +89,21 @@ class Chart:
             return VisualChartConfig(plotConfig= pltConfig, figureSize=figSize)
 #endregion
 
-        dates = sorted(self.analyzedData["Dates"], key=Chart._SortDate)
         dataPoints = Data(DataCategory.DATE_OVER_TIME)
 
-        for date in dates:
-            dataPoints.AppendData(date)
+        for data in self.analyzedData:
+            if filter != None:
+                if filter(data):
+                    continue
+            date = data["Dates"]
+            if date != None:
+                dataPoints.AppendData(date)
 
-        lineChart = LineChart("Scam Over Time", dataPoints)
-        filePath = os.path.join(self.savePath, "Scam_Over_Time.png")
+        lineChart = LineChart(fileName.replace("_", " "), dataPoints)
+        filePath = os.path.join(self.savePath, fileName + ".png")
         PlotChart(lineChart, filePath, GenerateConfiguration(dataPoints))
 
-    def _PlotScamByDates(self):
+    def _PlotScamByDates(self, fileName: str, filter = None):
 #region Local_Function
         def GenerateConfiguration(data: Data) -> VisualChartConfig:
             intervals = -1
@@ -85,18 +115,23 @@ class Chart:
             return VisualChartConfig(plotConfig= pltConfig, figureSize=figSize)
 #endregion
 
-        dates = sorted(self.analyzedData["Dates"], key=Chart._SortDate)
         dataPoints = Data(DataCategory.DATE)
 
-        for date in dates:
-            dataPoints.AppendData(date)
+        for data in self.analyzedData:
+            if filter != None:
+                if filter(data):
+                    continue
+            date = data["Dates"]
+            if date != None:
+                dataPoints.AppendData(date)
 
-        lineChart = LineChart("Scam By Date", dataPoints)
-        filePath = os.path.join(self.savePath, "Scam_By_Date.png")
+
+        lineChart = LineChart(fileName.replace("_", " "), dataPoints)
+        filePath = os.path.join(self.savePath, fileName + ".png")
         PlotChart(lineChart, filePath, GenerateConfiguration(dataPoints))
 
-    def _SortDate(date):
-        dateStr = date.split(" ")
+    def _GetRawDateValue(data):
+        dateStr = data["Dates"].split(" ")
         year = int(dateStr[2])
         month = MonthStrToInt(dateStr[1])
         day = int(dateStr[0])

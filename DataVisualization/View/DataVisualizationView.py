@@ -25,7 +25,7 @@ def CreateVisualizationViewLayout():
 
     rightColumn = [
         [sg.Image(key=PLOT_IMAGE_KEY)],
-        [sg.Combo(values=["Very Very Long Box"], key = PLOT_IMAGES_SELECTOR_KEY, visible=False)]
+        [sg.Combo(values=["Very Very Long Box With Message To Spare"], key = PLOT_IMAGES_SELECTOR_KEY, visible=False)]
     ]
 
     layout = [

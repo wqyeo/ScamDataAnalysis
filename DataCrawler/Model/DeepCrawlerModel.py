@@ -13,7 +13,14 @@ from Core.WebScraping.HTML.WebContent import *
 class DeepCrawlerModel:
     def __init__(self, viewModelRef) -> None:
         self.viewModelRef = viewModelRef
+        self._crawlingMessageCycle = 1
         pass
+
+    def _ShowCrawlingMessage(self):
+        self._crawlingMessageCycle += 1
+        if self._crawlingMessageCycle >= 4:
+            self._crawlingMessageCycle = 1
+        self.viewModelRef.ShowUserMessage("Crawling" + ("." * self._crawlingMessageCycle))
 
     @asyncio.coroutine
     def CrawlAndSaveData(self, targetDataPath: str, taskThread: None):
@@ -91,6 +98,7 @@ class DeepCrawlerModel:
 
         progress = 0
         for data in deepCrawlList:
+            self._ShowCrawlingMessage()
             if ThreadStopSignalled():
                 FreeThread()
                 Log("Thread stop signal recieved.", "Receieved a Thread stop signal on {}".format(taskThread.name), LogSeverity.DEBUG)

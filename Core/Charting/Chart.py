@@ -37,17 +37,18 @@ class Chart:
     def _PlotDetailedScamAlertStories(self) -> None:
         self._PlotScamOverTime()
         self._PlotScamByDates()
-        self._PlotScamTypes()
+        self._PlotCountablePieChart("ScamTypes", "Scam Types Occurance", "Scam_Type_Occurance.png")
+        self._PlotCountablePieChart("PlatformTypes", "Scam Target Platforms", "Scam_Target_Platform.png")
 
-    def _PlotScamTypes(self):
-        scamTypes = self.analyzedData["ScamTypes"]
+    def _PlotCountablePieChart(self, key: str, title: str, imageName):
+        scamTypes = self.analyzedData[key]
         dataPoints = Data(DataCategory.COUNTABLES)
 
         for scamType in scamTypes:
             dataPoints.AppendData(scamType)
 
-        pieChart = PieChart("Scam Types Occurance", dataPoints)
-        filePath = os.path.join(self.savePath, "Scam_Type_Occurance.png")
+        pieChart = PieChart(title, dataPoints)
+        filePath = os.path.join(self.savePath, imageName)
         PlotChart(pieChart, filePath, None)
 
     def _PlotScamOverTime(self):

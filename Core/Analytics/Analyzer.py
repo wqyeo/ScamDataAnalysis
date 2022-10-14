@@ -6,6 +6,7 @@ from Core.Analytics.DataType import DataType
 from Core.Database import Database
 from Core.Logging.LogSeverity import LogSeverity
 from Core.Logging.Logger import DumpInfo, Log
+from Core.Analytics.WeightingAnalysis import DeterminePlatform
 
 class Analyzer:
     def __init__(self, filePath: str, appModelRef) -> None:
@@ -75,20 +76,23 @@ class Analyzer:
 
         resultData = {
             "Dates": [],
-            "ScamTypes": []
+            "ScamTypes": [],
+            "PlatformTypes": []
         }
 
         for data in jsonData:
             titleAuthor = data.get("TitleAuthor", {})
             body = data.get("Body", {})
-
             warnMissingData = False
+            
+            # Append Date
             if "Date" in titleAuthor:
                 dateStr = titleAuthor["Date"]
                 resultData["Dates"].append(dateStr)
             else:
                 warnMissingData = True
 
+            # Scam Type
             if "ScamType" in body:
                 scamTypes = body["ScamType"]
                 if isinstance(scamTypes, list):
@@ -97,6 +101,15 @@ class Analyzer:
                         resultData["ScamTypes"].append(scamType)
                 else:
                     resultData["ScamTypes"].append(scamTypes)
+            else:
+                warnMissingData = True
+
+            # Determine the platform the scam was performed on
+            # by reading the description.
+            if "Description" in body:
+                scamDesc = body["Description"]
+                platform = DeterminePlatform(scamDesc)
+                resultData["PlatformTypes"].append(platform)
             else:
                 warnMissingData = True
 

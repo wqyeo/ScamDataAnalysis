@@ -1,3 +1,4 @@
+from Core.Async.TaskThread import TaskThread
 from Core.Charting.ChartConfigs.PlotConfig import PlotConfig
 from Core.Charting.ChartConfigs.FigureSize import FigureSize
 from Core.Charting.DataCategory import DataCategory
@@ -10,7 +11,7 @@ from Core.Logging.Logger import *
 from Core.Analytics.DataType import DataType
 
 class Chart:
-    def __init__(self, savePath: str, analyzedData: dict, dataType: DataType) -> None:
+    def __init__(self, savePath: str, analyzedData: dict, dataType: DataType, thread: TaskThread = None) -> None:
         """
         **analyzedData**
         All data inside should be sorted from lowest-highest
@@ -18,6 +19,7 @@ class Chart:
         self.savePath = savePath
         self.analyzedData = sorted(analyzedData, key=Chart._GetRawDateValue)
         self.dataType = dataType
+        self._thread = thread
 
     def Plot(self) -> bool:
         CreateToPath(self.savePath)
@@ -66,6 +68,11 @@ class Chart:
         dataPoints = Data(DataCategory.COUNTABLES)
 
         for data in self.analyzedData:
+            # End thread if user asked to end
+            if self._thread != None:
+                if self._thread.isRunning == False:
+                    return None
+
             if filter != None:
                 if filter(data):
                     continue
@@ -92,6 +99,11 @@ class Chart:
         dataPoints = Data(DataCategory.DATE_OVER_TIME)
 
         for data in self.analyzedData:
+            # End thread if user asked to end
+            if self._thread != None:
+                if self._thread.isRunning == False:
+                    return None
+
             if filter != None:
                 if filter(data):
                     continue
@@ -118,6 +130,11 @@ class Chart:
         dataPoints = Data(DataCategory.DATE)
 
         for data in self.analyzedData:
+            # End thread if user asked to end
+            if self._thread != None:
+                if self._thread.isRunning == False:
+                    return None
+
             if filter != None:
                 if filter(data):
                     continue

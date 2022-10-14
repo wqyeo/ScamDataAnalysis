@@ -1,4 +1,5 @@
 import json
+from Core.Async.TaskThread import TaskThread
 from Core.Charting.Chart import Chart
 
 from Core.Util import *
@@ -9,11 +10,12 @@ from Core.Logging.Logger import DumpInfo, Log
 from Core.Analytics.WeightingAnalysis import DeterminePlatform
 
 class Analyzer:
-    def __init__(self, filePath: str, appModelRef) -> None:
+    def __init__(self, filePath: str, appModelRef, thread: TaskThread = None) -> None:
         self.filePath = filePath
         self._appModelRef = appModelRef
         self._fileName = GetFileNameFromPath(filePath)
         self._outputPath = self._CreateFolderPath()
+        self._thread = thread
 
     def AnalyzeData(self):
 #region Local_Functions
@@ -28,7 +30,7 @@ class Analyzer:
         def PlotData(data, dataType: DataType, plotPath: str) -> bool:
             plotted = False
             if analyzeData != None:
-                chart = Chart(plotPath, data, dataType)
+                chart = Chart(plotPath, data, dataType, self._thread)
                 plotted = chart.Plot()
             return plotted
 #endregion

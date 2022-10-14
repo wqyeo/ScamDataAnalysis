@@ -21,7 +21,6 @@ class DeepCrawlerViewModel:
     def StartCrawl(self, window) -> None:
         newThread = TaskThread(DEEP_CRAWL_TASK_NAME)
         if not self.appRef.TryAddTask(newThread):
-            # TODO: Allow user to cancel crawling?
             self.ShowUserMessage("Already Crawling...")
             return None
 

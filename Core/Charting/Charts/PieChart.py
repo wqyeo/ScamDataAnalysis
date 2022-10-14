@@ -1,8 +1,10 @@
+import math
+
 from Core.Charting.Data import Data
 from Core.Charting.Charts.VisualChart import VisualChart
 
 class PieChart(VisualChart):
-    def __init__(self, title, data: list, othersCutOff: int = 10, showPercentage: bool = True):
+    def __init__(self, title, data: list, othersCutOff: int = -1, showPercentage: bool = True, showLabels = True):
         """
         A Pie Chart
 
@@ -13,9 +15,15 @@ class PieChart(VisualChart):
         """
         self.values = []
         self.labels = []
-        self.othersCutOff = othersCutOff
+        if othersCutOff <= 0:
+            # Anything below 1.3% will be converted to 'Others'
+            self.othersCutOff = math.ceil(data.dataSize * (1.3 / 100))
+        else:
+            self.othersCutOff = othersCutOff
+        self.showLabels = showLabels
         self._nonPercentLabel = []
         self._totalValue = 0.0
+
         self._UnpackData(data, showPercentage)
 
         if showPercentage:
@@ -37,6 +45,8 @@ class PieChart(VisualChart):
         if othersCount > 0:
             self.values.append(othersCount)
             self.labels.append("Others")
+            if showPercentage:
+                self._nonPercentLabel.append("Others")
 
     def _EvaluatePercentage(self):
         for i in range(len(self.labels)):

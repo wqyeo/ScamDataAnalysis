@@ -45,17 +45,15 @@ class Chart:
 
     def _PlotDetailedScamAlertStories(self) -> None:
         figSize = FigureSize(6, 6)
-        pieChartConfig = VisualChartConfig(figureSize=figSize)
+        legendConfig = LegendConfig(True)
+        pieChartConfig = VisualChartConfig(figureSize=figSize, legendConfig=legendConfig)
 
         self._PlotScamOverTime("Scam_Over_Time")
         #self._PlotScamByDates("Scam_By_Date")
-        self._PlotCountablePieChart("ScamTypes", "Scam_Types_Occurance", pieChartConfig)
-        self._PlotCountablePieChart("PlatformTypes", "Scam_Target_Platforms", pieChartConfig)
+        self._PlotCountablePieChart("ScamTypes", "Scam_Types_Occurance", pieChartConfig, showLabel=False)
+        self._PlotCountablePieChart("PlatformTypes", "Scam_Target_Platforms", pieChartConfig, showLabel=False)
 
-        legendConfig = LegendConfig(True)
-        pieChartConfig.legendConfig = legendConfig
-
-        for year in range(2019, 2022):
+        for year in range(2018, 2023):
             def YearFilter(data):
                 return Chart._GetRawDateValue(data) < (year * 12 * 30) or Chart._GetRawDateValue(data) > ((year + 1) * 12 * 30)
 
@@ -64,7 +62,7 @@ class Chart:
             self._PlotCountablePieChart("ScamTypes", "Scam_Types_Occurance_" + str(year), pieChartConfig, YearFilter)
             self._PlotCountablePieChart("PlatformTypes", "Scam_Target_Platforms_" + str(year), pieChartConfig, YearFilter)
 
-    def _PlotCountablePieChart(self, key: str, fileName: str, chartConfig: VisualChartConfig = None, filter = None):
+    def _PlotCountablePieChart(self, key: str, fileName: str, chartConfig: VisualChartConfig = None, filter = None, showLabel: bool = True):
         dataPoints = Data(DataCategory.COUNTABLES)
 
         for data in self.analyzedData:
@@ -80,7 +78,7 @@ class Chart:
             if toCount != None:
                 dataPoints.AppendData(toCount)
 
-        pieChart = PieChart(fileName.replace("_", " "), dataPoints)
+        pieChart = PieChart(fileName.replace("_", " "), dataPoints, showLabels=showLabel)
         filePath = os.path.join(self.savePath, fileName + ".png")
         PlotChart(pieChart, filePath, chartConfig)
 

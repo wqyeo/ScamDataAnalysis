@@ -9,7 +9,9 @@ PLATFORM_SEARCH_MAPPING = {
     "YouTube": [("youtube", 0.25)],
     "Phone Call": [("call", 0.025), ("dial", 0.01), ("number", 0.01)],
     "Tinder": [("tinder", 0.5)],
-    "Instagram": [("insta", 0.5), ["ig", 0.1]]
+    "Instagram": [("insta", 0.5), ["ig", 0.1]],
+    "Email": [("email", 0.4)],
+    "SMS": [("message", 0.025), ("sms", 0.25)]
 }
 
 

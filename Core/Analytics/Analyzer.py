@@ -118,7 +118,12 @@ class Analyzer:
                 # by reading the description.
                 if "Description" in body:
                     scamDesc = body["Description"]
-                    currData["PlatformTypes"] = DeterminePlatform(scamDesc)
+                    platform = DeterminePlatform(scamDesc)
+                    currData["PlatformTypes"] = platform
+
+                    # NOTE: Logging
+                    if platform == "Unknown":
+                        LogAndDump("Unknown Platform Detected", "Unknown platform detected for description.", scamDesc)
                 else:
                     warnMissingData = True
             else: 

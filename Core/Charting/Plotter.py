@@ -38,10 +38,13 @@ def _PrintPieChart(pieChart: PieChart, outputPath: str, chartConfig: VisualChart
                 legendConfig = chartConfig.legendConfig
 
         if legendConfig.show:
-            plt.legend(pieChart.GetNonPercentageLabels(), loc=legendConfig.location, fontsize=legendConfig.fontSize)
+            plt.legend(pieChart.labels, loc=legendConfig.location, fontsize=legendConfig.fontSize)
 #endregion
 
-    plt.pie(pieChart.values, labels=pieChart.labels)
+    if pieChart.showLabels:
+        plt.pie(pieChart.values, labels=pieChart.GetNonPercentageLabels())
+    else:
+        plt.pie(pieChart.values)
     plt.title(pieChart.title)
     SetPlotLegend()
     plt.tight_layout()

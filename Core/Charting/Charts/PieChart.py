@@ -1,8 +1,10 @@
+import math
+
 from Core.Charting.Data import Data
 from Core.Charting.Charts.VisualChart import VisualChart
 
 class PieChart(VisualChart):
-    def __init__(self, title, data: list, othersCutOff: int = 3):
+    def __init__(self, title, data: list, othersCutOff: int = -1, showPercentage: bool = True, showLabels = True):
         """
         A Pie Chart
 
@@ -13,12 +15,22 @@ class PieChart(VisualChart):
         """
         self.values = []
         self.labels = []
-        self.othersCutOff = othersCutOff
+        if othersCutOff <= 0:
+            # Anything below 1.3% will be converted to 'Others'
+            self.othersCutOff = math.ceil(data.dataSize * (1.3 / 100))
+        else:
+            self.othersCutOff = othersCutOff
+        self.showLabels = showLabels
+        self._nonPercentLabel = []
+        self._totalValue = 0.0
 
-        self._UnpackData(data)
-        super().__init__(title)
+        self._UnpackData(data, showPercentage)
 
-    def _UnpackData(self, data: Data):
+        if showPercentage:
+            self._EvaluatePercentage()
+        super().__init__(title+ " (" + str(data.dataSize) + ")")
+
+    def _UnpackData(self, data: Data, showPercentage: bool):
         othersCount = 0
         for point in data.points:
             if point.xValue < self.othersCutOff:
@@ -26,7 +38,24 @@ class PieChart(VisualChart):
             else:
                 self.values.append(point.xValue)
                 self.labels.append(point.yLabel)
+                if showPercentage:
+                    self._nonPercentLabel.append(point.yLabel)
+            self._totalValue += point.xValue
 
         if othersCount > 0:
             self.values.append(othersCount)
             self.labels.append("Others")
+            if showPercentage:
+                self._nonPercentLabel.append("Others")
+
+    def _EvaluatePercentage(self):
+        for i in range(len(self.labels)):
+            val = self.values[i]
+            percent = (val / self._totalValue) * 100.0
+            self.labels[i] += " ({:.1f}%)".format(percent)
+
+    def GetNonPercentageLabels(self) -> list:
+        if len(self._nonPercentLabel) >= 1:
+            return self._nonPercentLabel
+        else:
+            return self.labels

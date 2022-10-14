@@ -1,6 +1,7 @@
 import linecache
 from re import T
 import matplotlib.pyplot as plt
+from Core.Charting.ChartConfigs.LegendConfig import LegendConfig
 
 from Core.Charting.Charts.VisualChart import VisualChart
 from Core.Charting.Charts.LineChart import LineChart
@@ -28,8 +29,24 @@ def PlotChart(visualChart: VisualChart,  outputPath: str, chartConfig: VisualCha
         Log("Unknown Visual Chart Type", "Unknown Visual Chart Type given to ouput to {}".format(outputPath), LogSeverity.WARNING)
 
 def _PrintPieChart(pieChart: PieChart, outputPath: str, chartConfig: VisualChartConfig) -> None:
-    plt.pie(pieChart.values, labels=pieChart.labels)
+#region Local_Function
+    def SetPlotLegend():
+        nonlocal chartConfig
+        legendConfig = LegendConfig()
+        if not chartConfig == None:
+            if not chartConfig.legendConfig == None:
+                legendConfig = chartConfig.legendConfig
+
+        if legendConfig.show:
+            plt.legend(pieChart.labels, loc=legendConfig.location, fontsize=legendConfig.fontSize)
+#endregion
+
+    if pieChart.showLabels:
+        plt.pie(pieChart.values, labels=pieChart.GetNonPercentageLabels())
+    else:
+        plt.pie(pieChart.values)
     plt.title(pieChart.title)
+    SetPlotLegend()
     plt.tight_layout()
     plt.savefig(outputPath)
 

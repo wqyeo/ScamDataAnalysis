@@ -1,4 +1,5 @@
 import json
+from Core.Async.TaskThread import TaskThread
 from Core.Charting.Chart import Chart
 
 from Core.Util import *
@@ -9,11 +10,12 @@ from Core.Logging.Logger import DumpInfo, Log
 from Core.Analytics.WeightingAnalysis import DeterminePlatform
 
 class Analyzer:
-    def __init__(self, filePath: str, appModelRef) -> None:
+    def __init__(self, filePath: str, appModelRef, thread: TaskThread = None) -> None:
         self.filePath = filePath
         self._appModelRef = appModelRef
         self._fileName = GetFileNameFromPath(filePath)
         self._outputPath = self._CreateFolderPath()
+        self._thread = thread
 
     def AnalyzeData(self):
 #region Local_Functions
@@ -28,7 +30,7 @@ class Analyzer:
         def PlotData(data, dataType: DataType, plotPath: str) -> bool:
             plotted = False
             if analyzeData != None:
-                chart = Chart(plotPath, data, dataType)
+                chart = Chart(plotPath, data, dataType, self._thread)
                 plotted = chart.Plot()
             return plotted
 #endregion
@@ -74,48 +76,64 @@ class Analyzer:
 
         jsonData = jsonData["DetailedStories"]
 
-        resultData = {
-            "Dates": [],
-            "ScamTypes": [],
-            "PlatformTypes": []
-        }
+        resultData = []
 
         for data in jsonData:
+            if data == None:
+                continue
+            currData = {
+                "Dates": None,
+                "ScamTypes": [],
+                "PlatformTypes": None
+            }
+
             titleAuthor = data.get("TitleAuthor", {})
             body = data.get("Body", {})
             warnMissingData = False
             
-            # Append Date
-            if "Date" in titleAuthor:
-                dateStr = titleAuthor["Date"]
-                resultData["Dates"].append(dateStr)
-            else:
-                warnMissingData = True
-
-            # Scam Type
-            if "ScamType" in body:
-                scamTypes = body["ScamType"]
-                if isinstance(scamTypes, list):
-                    # This data is in multiple scam category
-                    for scamType in scamTypes:
-                        resultData["ScamTypes"].append(scamType)
+            if titleAuthor != None:
+                # Date
+                if "Date" in titleAuthor:
+                    dateStr = titleAuthor["Date"]
+                    currData["Dates"] = dateStr
                 else:
-                    resultData["ScamTypes"].append(scamTypes)
+                    warnMissingData = True
             else:
                 warnMissingData = True
 
-            # Determine the platform the scam was performed on
-            # by reading the description.
-            if "Description" in body:
-                scamDesc = body["Description"]
-                platform = DeterminePlatform(scamDesc)
-                resultData["PlatformTypes"].append(platform)
-            else:
+            if body != None:
+                # Scam Type
+                if "ScamType" in body:
+                    scamTypes = body["ScamType"]
+                    if isinstance(scamTypes, list):
+                        # This data is in multiple scam category
+                        for scamType in scamTypes:
+                            currData["ScamTypes"].append(scamType)
+                    else:
+                        currData["ScamTypes"].append(scamTypes)
+                else:
+                    warnMissingData = True
+
+                # Determine the platform the scam was performed on
+                # by reading the description.
+                if "Description" in body:
+                    scamDesc = body["Description"]
+                    platform = DeterminePlatform(scamDesc)
+                    currData["PlatformTypes"] = platform
+
+                    # NOTE: Logging
+                    if platform == "Unknown":
+                        LogAndDump("Unknown Platform Detected", "Unknown platform detected for description.", scamDesc)
+                else:
+                    warnMissingData = True
+            else: 
                 warnMissingData = True
 
             if warnMissingData:
                 dumpPath = DumpInfo(json.dumps(data), LogSeverity.WARNING)
                 Log("Missing Data in given JSON", "Missing data in user given JSON, more Info at {}".format(dumpPath), LogSeverity.WARNING)
+            else:
+                resultData.append(currData)
         return resultData
 
     def _BundleScamAlertStories(self, jsonData) -> dict:

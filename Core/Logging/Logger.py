@@ -57,3 +57,8 @@ def DumpInfo(info:str, severity:LogSeverity=LogSeverity.LOG) -> str:
 def Log(title:str, message:str, severity:LogSeverity=LogSeverity.LOG) -> None:
     logMessage = LogMessage(title, message, severity)
     Log(logMessage)
+
+def LogAndDump(title: str, message: str, info: str, severity: LogSeverity = LogSeverity.LOG) -> None:
+    path = DumpInfo(info, severity)
+    message += "More Info at: {}".format(path)
+    Log(title, message, severity)

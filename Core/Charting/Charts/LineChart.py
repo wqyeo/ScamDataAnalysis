@@ -9,7 +9,7 @@ class LineChart(VisualChart):
         self.yLabels = []
         
         self._UnpackData(data)
-        super().__init__(title)
+        super().__init__(title + " (" + str(data.dataSize) + ")")
 
     def _UnpackData(self, data: Data):
         for point in data.points:

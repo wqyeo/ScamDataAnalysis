@@ -58,5 +58,8 @@ class Crawler:
         if crawlTarget == CrawlTarget.SCAM_ALERT_STORIES:
             filePath = os.path.join(configPath, "ScamAlertStories.json")
             return Database.OpenJsonData(filePath)
+        if crawlTarget == CrawlTarget.SCAM_ALERT_NEWS:
+            filePath = os.path.join(configPath, "ScamAlertNews.json")
+            return Database.OpenJsonData(filePath)
         else:
             return None

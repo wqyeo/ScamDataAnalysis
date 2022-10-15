@@ -1,0 +1,9 @@
+{
+    "MothershipSG": [
+        {
+            "tag": "div",
+            "jsonName": "Description",
+            "class_": "content-article-wrap"
+        }
+    ]
+}

@@ -3,3 +3,4 @@ matplotlib
 multipledispatch
 requests
 beautifulsoup4
+urllib

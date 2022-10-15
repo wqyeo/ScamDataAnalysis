@@ -37,6 +37,9 @@ class WebContent:
 
         if scrapTarget == ScrapTarget.SCAM_ALERT_STORIES:
             configPath = os.path.join(configPath, "ScamAlertStories.json")
+        elif scrapTarget == ScrapTarget.SCAM_ALERT_NEWS:
+            # TODO: Scam Alert News
+            pass
         else:
             Log("Unimplemented Configuraiton", "Unimplemented HTML-Scrap Configuration for {}".format(scrapTarget.name), LogSeverity.WARNING)
             pass

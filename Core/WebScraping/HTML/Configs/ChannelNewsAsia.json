@@ -1,0 +1,17 @@
+{
+    "ChannelNewsAsia": [
+        {
+            "tag": "div",
+            "jsonName": "Text",
+            "class_": "text",
+            "storeTextContent": false,
+            "innerContents": [
+                {
+                    "tag": "div",
+                    "jsonName": "Description",
+                    "class_": "text-long"
+                }
+            ]
+        }
+    ]
+}

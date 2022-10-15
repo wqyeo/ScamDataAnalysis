@@ -32,26 +32,56 @@ class WebContent:
         self.contentSplit = None
         pass
 
-    def CreateWebContentsByTarget(scrapTarget: ScrapTarget) -> list:
+    def CreateWebContentsByTarget(scrapTarget: ScrapTarget) -> dict:
+#region Local_Function
+        def TryGetConfigsFromPaths(pathList: list) -> list:
+            res = []
+            for path in pathList:
+                try:
+                    res.append(Database.OpenJsonData(path))
+                except:
+                    return None
+            return res
+
+        def GetWebContentFromConfigs(confList: list) -> dict:
+            res = {}
+            for confg in confList:
+                try:
+                    for key in confg:
+                        curr = WebContent._LoadWebContent(confg[key])
+                        if curr == None:
+                            raise Exception("Invalid Configuration")
+                        res[key] = curr
+                        # Cause there will only be one key, else the configuration would be invalid.
+                        break
+                except:
+                    LogAndDump("Configuration Invalid", "Loading HTML-Scrap Configuration for {} is Invalid.".format(scrapTarget), confg, LogSeverity.WARNING)
+                    continue
+            return res
+#endregion
+
         configPath = os.path.join("Core", "WebScraping", "HTML", "Configs")
 
+        configPaths = []
         if scrapTarget == ScrapTarget.SCAM_ALERT_STORIES:
-            configPath = os.path.join(configPath, "ScamAlertStories.json")
+            configPaths.append(os.path.join(configPath, "ScamAlertStories.json"))
+        elif scrapTarget == ScrapTarget.SCAM_ALERT_NEWS:
+            configPaths.append(os.path.join(configPath, "ChannelNewsAsia.json"))
+            configPaths.append(os.path.join(configPath, "MothershipSG.json"))
+            configPaths.append(os.path.join(configPath, "StraitsTimes.json"))
         else:
             Log("Unimplemented Configuraiton", "Unimplemented HTML-Scrap Configuration for {}".format(scrapTarget.name), LogSeverity.WARNING)
-            pass
+            return None
         
-        configs = None
-        try:
-            configs = Database.OpenJsonData(configPath)
-        except:
+        configs = TryGetConfigsFromPaths(configPaths)
+        if configs == None:
             Log("Load configuration failed", "Failed to load HTML-Scrap Configuration from {}".format(scrapTarget.name), LogSeverity.ERROR)
             return None
 
-        result = WebContent._LoadWebContent(configs["WebContents"])
-
-        if result == None:
+        result = GetWebContentFromConfigs(configs)
+        if len(result) == 0:
             Log("Configuration Invalid", "Loading HTML-Scrap Configuration of {} results in None. Invalid configuration.".format(scrapTarget.name), LogSeverity.ERROR)
+            return None
 
         return result
 

@@ -2,6 +2,7 @@ import asyncio
 from configparser import RawConfigParser
 import os
 import json
+from Core.Crawling.CrawlTarget import CrawlTarget
 
 from Core.Logging.Logger import *
 from Core.Crawling.Crawler import Crawler
@@ -23,7 +24,7 @@ class DeepCrawlerModel:
         self.viewModelRef.ShowUserMessage("Crawling" + ("." * self._crawlingMessageCycle))
 
     @asyncio.coroutine
-    def CrawlAndSaveData(self, targetDataPath: str, taskThread: None):
+    def CrawlAndSaveData(self, targetDataPath: str, taskThread = None):
         """
         Parameters
         ------------------------------------------
@@ -48,6 +49,13 @@ class DeepCrawlerModel:
             nonlocal taskThread
             if taskThread != None:
                 return not taskThread.isRunning
+
+        def GetCrawlTarget(data) -> CrawlTarget:
+            for d in data:
+                if d == "Stories":
+                    return CrawlTarget.SCAM_ALERT_STORIES
+                elif d == "News":
+                    return CrawlTarget.SCAM_ALERT_NEWS
 
 #endregion
 
@@ -84,11 +92,159 @@ class DeepCrawlerModel:
             FreeThread()
             return None
 
-        # TODO: Reformat
-        # These constants should be dynamic and loaded from somewhere
-        # based on the requested site to crawl.
+        if targetCrawl == "Stories":
+            jsonData = self._CrawlStories(jsonData, webContents, taskThread)
+        elif targetCrawl == "News":
+            jsonData = self._CrawlNews(jsonData, webContents, taskThread)
+        else:
+            jsonData = None
+
+        if jsonData != None:
+            # File name should be similar as target data.
+            originalFileName = os.path.basename(targetDataPath).split('/')[-1]
+            saveFileName = "Detailed_" + originalFileName 
+            # Save location same as where the target data is at.
+            saveLocation = os.path.join(GetDirectoryFromFilePath(targetDataPath), saveFileName)
+
+            Database.SaveJsonData(jsonData, saveLocation)
+
+            self.viewModelRef.ShowUserMessage("Successfully saved under {}".format(saveLocation))
+            self.viewModelRef.UpdateLoadingBar(100)
+        FreeThread()
+
+    def _CrawlNews(self, jsonData, webContents, taskThread = None):
+#region Local_Function
+        def FreeThread():
+            nonlocal taskThread
+            if taskThread != None:
+                taskThread.isRunning = False
+                self.viewModelRef.FreeAppThread()
+
+        def ThreadStopSignalled():
+            nonlocal taskThread
+            if taskThread != None:
+                return not taskThread.isRunning
+
+        def TryGetListToCrawl() -> list:
+            nonlocal jsonData
+            res = None
+            if "News" in jsonData:
+                res = jsonData["News"]
+            return res
+
+        def DetermineScrapConfigByURL(url: str) -> str:
+            if "channelnewsasia" in url:
+                return "ChannelNewsAsia"
+            elif "straitstimes" in url:
+                return "StraitsTimes"
+            elif "mothership.sg" in url:
+                return "MothershipSG"
+            return None
+#endregion
+        
+        deepCrawlList = TryGetListToCrawl()
+        if deepCrawlList == None:
+            self.viewModelRef.ShowUserMessage("Given file is either invalid or has no data filled!")
+            return None
+        
+        jsonData = json.loads('{"DetailedNews": []}')
+
+        progress = 0
+        for data in deepCrawlList:
+            self._ShowCrawlingMessage()
+
+            if ThreadStopSignalled():
+                FreeThread()
+                Log("Thread stop signal recieved.", "Receieved a Thread stop signal on {}".format(taskThread.name), LogSeverity.DEBUG)
+                return None
+
+            self.viewModelRef.UpdateLoadingBar((progress / len(deepCrawlList)) * 100)
+
+            targetSite = data["Url"]
+            configKey = DetermineScrapConfigByURL(targetSite)
+            if configKey == None:
+                Log("Unknown URL to Scrap", "Unknown URL to Scral for target site {}.".format(targetSite), LogSeverity.WARNING)
+                continue
+
+            try:
+                contentRaw = None
+                if configKey == "ChannelNewsAsia":
+                    contentRaw = Crawler(targetSite, None).GetChannelNewsAsia()
+                elif configKey == "StraitsTimes":
+                    contentRaw = Crawler(targetSite, None).GetStraitsTime()
+                else:
+                    contentRaw = Crawler(targetSite, None).CrawlGetRequest()
+            except:
+                Log("URL Crawl Failed", "Failed to crawl URL {}".format(targetSite), LogSeverity.WARNING)
+                continue
+
+            scraper = HTMLScraper(contentRaw, webContents[configKey])
+            content = scraper.Scrap()
+            if content == None:
+                continue
+
+            try:
+                date = data["Date"]
+                if configKey == "ChannelNewsAsia":
+                    texts = content["Text"]
+                    if isinstance(texts, list):
+                        desc = ""
+                        for text in texts:
+                            desc += text["Description"] + " "
+                    else:
+                        desc = texts
+
+                    if desc == None:
+                        raise Exception("Desc not found.")
+                    desc = desc.strip()
+                    content = {
+                        "Date": date,
+                        "Description": desc
+                    }
+                else:
+                    content["Date"] = date
+
+                if isinstance(content["Description"], list):
+                    desc = ""
+                    for text in content["Description"]:
+                        desc += text + " "
+                    desc = desc.strip()
+                    content["Description"] = desc
+            except:
+                LogAndDump("Content Format", "Failed to format content.", contentRaw, LogSeverity.WARNING)
+                continue
+            
+            try:
+                jsonData["DetailedNews"].append(content)
+            except:
+                infoFileName = DumpInfo(content, LogSeverity.ERROR)
+                message = "Error Converting one of scrapped data to JSON. More details at {}".format(infoFileName)
+                Log("JSON Data Conver Error {}".format(data["Title"]), message, LogSeverity.ERROR)
+                continue
+
+            progress += 1       
+        return jsonData
+
+    def _CrawlStories(self, jsonData, webContents, taskThread = None):
+#region Local_Function
+        def FreeThread():
+            nonlocal taskThread
+            if taskThread != None:
+                taskThread.isRunning = False
+                self.viewModelRef.FreeAppThread()
+
+        def ThreadStopSignalled():
+            nonlocal taskThread
+            if taskThread != None:
+                return not taskThread.isRunning
+#endregion
+
         deepCrawlList = jsonData["Stories"]
-        if deepCrawlList == None or deepCrawlList == []:
+        if "Stories" in jsonData:
+            if deepCrawlList == None or deepCrawlList == []:
+                self.viewModelRef.ShowUserMessage("Given file is either invalid or has no data filled!")
+                return None
+        else:
             self.viewModelRef.ShowUserMessage("Given file is either invalid or has no data filled!")
             return None
 
@@ -107,9 +263,9 @@ class DeepCrawlerModel:
             self.viewModelRef.UpdateLoadingBar((progress / len(deepCrawlList)) * 100)
 
             targetSite = crawlSite + data["Url"]
-            contentRaw = self._Crawl(targetSite)
+            contentRaw = Crawler(targetSite, None).CrawlRaw()
 
-            scraper = HTMLScraper(contentRaw, webContents)
+            scraper = HTMLScraper(contentRaw, webContents["ScamAlertStories"])
             content = scraper.Scrap()
             if content == None:
                 continue
@@ -122,28 +278,15 @@ class DeepCrawlerModel:
                 Log("JSON Data Conver Error {}".format(data["Title"]), message, LogSeverity.ERROR)
                 continue
 
-            progress += 1
-
-        # File name should be similar as target data.
-        originalFileName = os.path.basename(targetDataPath).split('/')[-1]
-        saveFileName = "Detailed_" + originalFileName
-        # Save location same as where the target data is at.
-        saveLocation = os.path.join(GetDirectoryFromFilePath(targetDataPath), saveFileName)
-
-        Database.SaveJsonData(jsonData, saveLocation)
-
-        self.viewModelRef.ShowUserMessage("Successfully saved under {}".format(saveLocation))
-        self.viewModelRef.UpdateLoadingBar(100)
-        FreeThread()
-
-    def _Crawl(self, site: str) -> str:
-        crawler = Crawler(site, None)
-        return crawler.CrawlRaw()
+            progress += 1       
+        return jsonData
 
     def _CreateWebContent(self, targetCrawl: str) -> list:
         targetType = None
         if targetCrawl.strip() == "Stories":
             targetType = ScrapTarget.SCAM_ALERT_STORIES
+        elif targetCrawl.strip() == "News":
+            targetType = ScrapTarget.SCAM_ALERT_NEWS
         else:
             return None
 

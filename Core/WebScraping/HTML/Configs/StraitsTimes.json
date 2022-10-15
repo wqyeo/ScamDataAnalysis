@@ -1,0 +1,9 @@
+{
+    "StraitsTimes": [
+        {
+            "tag": "div",
+            "jsonName": "Description",
+            "class_": "clearfix text-formatted field field--name-field-paragraph-text field--type-text-long field--label-hidden field__item"
+        }
+    ]
+}

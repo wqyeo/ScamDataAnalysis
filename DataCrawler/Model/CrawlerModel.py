@@ -48,6 +48,21 @@ class CrawlerModel:
             nonlocal taskThread
             if taskThread != None:
                 return not taskThread.isRunning
+
+        def GetJSONHeader(crawlTarget: CrawlTarget):
+            if crawlTarget == CrawlTarget.SCAM_ALERT_STORIES:
+                return "Stories"
+            elif crawlTarget == CrawlTarget.SCAM_ALERT_NEWS:
+                return "News"
+            return ""
+
+        def GetContentListKey(crawlTarget: CrawlTarget) -> str:
+            listKey = ""
+            if crawlTarget == CrawlTarget.SCAM_ALERT_NEWS:
+                listKey = "NewsList"
+            elif crawlTarget == CrawlTarget.SCAM_ALERT_STORIES:
+                listKey = "StoryList"
+            return listKey
 #endregion
 
         # Check if Save Location exists
@@ -72,7 +87,8 @@ class CrawlerModel:
         crawlSite = crawlConfig["Site"]
         crawlSiteHeaders = crawlConfig["Headers"]
 
-        jsonData = json.loads('{"Stories": []}')
+        jsonHeader = GetJSONHeader(crawlTarget)
+        jsonData = json.loads('{"' + jsonHeader + '": []}')
         # Recursively crawl and fetch raw content (string)
         for pageNo in range(recursiveTimes):
             self._ShowCrawlingMessage()
@@ -90,7 +106,8 @@ class CrawlerModel:
             # Try to get the raw contents as an array.
             contentArray = None
             try:
-                contentArray = self._GetContentList(contentRaw, "StoryList")
+                listKey = GetContentListKey(crawlTarget)
+                contentArray = self._GetContentList(contentRaw, listKey)
             except:
                 infoFileName = DumpInfo(contentRaw, LogSeverity.WARNING)
                 message = "Error Fetching data at page: {pageNo}. More info at {fileName}.".format(pageNo=pageNo, fileName=infoFileName)
@@ -111,7 +128,7 @@ class CrawlerModel:
                     Log("Data Convert", message, LogSeverity.WARNING)
                     continue
 
-                jsonData["Stories"].append(tempJson)
+                jsonData[jsonHeader].append(tempJson)
 
         fileName = CrawlerModel._GenerateFileName(crawlTarget)
         saveLocation = os.path.join(saveLocation, fileName)
@@ -140,7 +157,7 @@ class CrawlerModel:
             return None
 
         # Load target Site and Headers from configuration.
-        return Crawler.LoadConfig(CrawlTarget.SCAM_ALERT_STORIES)
+        return Crawler.LoadConfig(crawlTarget)
 
     def _Crawl(self, site: str, data: object) -> str:
         crawler = Crawler(site, data, CrawlerModel.RemoveNoiseFromContent)
@@ -164,6 +181,7 @@ class CrawlerModel:
         content = content.replace('\\"', "'")
         content = content.replace("\\u0026", "&")
         content = content.replace("\\u0027", "'")
+        content = content.replace(chr(0x2019), "'")
         content = content.replace("\\xa0\\", " ")
         
         return content

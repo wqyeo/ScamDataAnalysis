@@ -1,0 +1,10 @@
+{
+    "Site" : "https://www.scamalert.sg/news/GetNewsListAjax/",
+    "Headers" : {
+        "scamType": "",
+        "year": "",
+        "month": "",
+        "page": "1",
+        "sortBy": "latest"
+    }
+}

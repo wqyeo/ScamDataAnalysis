@@ -1,4 +1,5 @@
 import json
+from os import curdir
 from Core.Async.TaskThread import TaskThread
 from Core.Charting.Chart import Chart
 
@@ -7,7 +8,7 @@ from Core.Analytics.DataType import DataType
 from Core.Database import Database
 from Core.Logging.LogSeverity import LogSeverity
 from Core.Logging.Logger import DumpInfo, Log
-from Core.Analytics.WeightingAnalysis import DeterminePlatform
+from Core.Analytics.WeightingAnalysis import DeterminePlatform, DetermineScamTypes
 
 class Analyzer:
     def __init__(self, filePath: str, appModelRef, thread: TaskThread = None) -> None:
@@ -25,6 +26,10 @@ class Analyzer:
                     return DataType.SCAM_ALERT_STORIES
                 elif d == "DetailedStories":
                     return DataType.DETAILED_SCAM_ALERT_STORIES
+                elif d == "DetailedNews":
+                    return DataType.DETAILED_SCAM_ALERT_NEWS
+                elif d == "News":
+                    return DataType.SCAM_ALERT_NEWS
             return None
         
         def PlotData(data, dataType: DataType, plotPath: str) -> bool:
@@ -33,6 +38,16 @@ class Analyzer:
                 chart = Chart(plotPath, data, dataType, self._thread)
                 plotted = chart.Plot()
             return plotted
+
+        def TrySaveData(savePath, data) -> bool:
+            try:
+                CreateToPath(savePath)
+                filePath = os.path.join(savePath, "analysis_data.json")
+                Database.SaveJsonData(data, filePath)
+                return True
+            except Exception as e:
+                Log("Save Analysis Data Failed", "Failed to save analyzed data, {}".format(getattr(e, 'message', repr(e))), LogSeverity.WARNING)
+                return False
 #endregion
 
         jsonData = None
@@ -46,15 +61,23 @@ class Analyzer:
             Log("Error Convering Json File", "Error Converting JSON File from path {}.".format(self.filePath), LogSeverity.WARNING)
             return None
 
+        self._appModelRef.ShowUserMessage("")
         analyzeData = None
-        if dataType == DataType.SCAM_ALERT_STORIES:
+        if dataType == DataType.SCAM_ALERT_STORIES or dataType == DataType.SCAM_ALERT_NEWS:
             self._appModelRef.ShowUserMessage("NOTE: Crawling Undetailed Data.\nThere will be lesser data generated.\nTo generate more data, use the deep data crawler on this current data and perform analysis on it.")
-            analyzeData = self._BundleScamAlertStories(jsonData)
+            analyzeData = self._BundleSimpleData(jsonData)
         elif dataType == DataType.DETAILED_SCAM_ALERT_STORIES:
-            self._appModelRef.ShowUserMessage("")
             analyzeData = self._BundleDetailedScamAlertStories(jsonData)
+        elif dataType == DataType.DETAILED_SCAM_ALERT_NEWS:
+            analyzeData = self._BundleDetailedScamAlertNews(jsonData)
+
+        if analyzeData == None:
+            Log("Data failed to Bundle", "Failed to bundle Data for file {}.".format(self.filePath), LogSeverity.WARNING)
+            return None
 
         chartPaths = os.path.join(self._outputPath, "charts")
+        TrySaveData(chartPaths, analyzeData)
+        
         if PlotData(analyzeData, dataType, chartPaths):
             figuresPath = []
             # Get all plot figures (.png)
@@ -72,8 +95,45 @@ class Analyzer:
         CreateToPath(path)
         return path
 
-    def _BundleDetailedScamAlertStories(self, jsonData) -> dict:
+    def _BundleDetailedScamAlertNews(self, jsonData) -> dict:
+        jsonData = jsonData["DetailedNews"]
+        resultData = []
 
+        for data in jsonData:
+            if data == None:
+                continue
+
+            currData = {
+                "Dates": None,
+                "ScamTypes": [],
+                "PlatformTypes": None
+            }
+            warnMissingData = False
+
+            if "Date" in data:
+                currData["Dates"] = data["Date"]
+
+            if "Description" in data:
+                platform = DeterminePlatform(data["Description"])
+                currData["PlatformTypes"] = platform
+
+                scamTypes = DetermineScamTypes(data["Description"])
+                currData["ScamTypes"] = scamTypes
+
+                if platform == "Unknown":
+                    LogAndDump("Unknown Platform Detected", "Unknown platform detected for description.", data["Description"])
+
+            if currData["Dates"] == None or len(currData["ScamTypes"]) == 0 or currData["PlatformTypes"] == None:
+                warnMissingData = True
+
+            if warnMissingData:
+                dumpPath = DumpInfo(json.dumps(data), LogSeverity.WARNING)
+                Log("Missing Data in given JSON", "Missing data in user given JSON, more Info at {}".format(dumpPath), LogSeverity.WARNING)
+            else:
+                resultData.append(currData)
+        return resultData
+
+    def _BundleDetailedScamAlertStories(self, jsonData) -> dict:
         jsonData = jsonData["DetailedStories"]
 
         resultData = []
@@ -136,18 +196,22 @@ class Analyzer:
                 resultData.append(currData)
         return resultData
 
-    def _BundleScamAlertStories(self, jsonData) -> dict:
+    def _BundleSimpleData(self, jsonData) -> dict:
 
-        jsonData = jsonData["Stories"]
+        if "Stories" in jsonData:
+            jsonData = jsonData["Stories"]
+        elif "News" in jsonData:
+            jsonData = jsonData["News"]
+        else:
+            return None
 
-        resultData = {
-            "Dates": []
-        }
+        resultData = []
 
         for data in jsonData:
+            currData = {}
             if "Date" in data:
-                dateStr = data["Date"]
-                resultData["Dates"].append(dateStr)
+                currData["Dates"] = data["Date"]
+                resultData.append(currData)
             else:
                 dumpPath = DumpInfo(json.dumps(data), LogSeverity.WARNING)
                 Log("Missing Data in given JSON", "Missing data in user given JSON, more Info at {}".format(dumpPath), LogSeverity.WARNING)

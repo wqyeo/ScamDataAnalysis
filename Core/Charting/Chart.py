@@ -11,7 +11,7 @@ from Core.Logging.Logger import *
 from Core.Analytics.DataType import DataType
 
 class Chart:
-    def __init__(self, savePath: str, analyzedData: dict, dataType: DataType, thread: TaskThread = None) -> None:
+    def __init__(self, savePath: str, analyzedData, dataType: DataType, thread: TaskThread = None) -> None:
         """
         **analyzedData**
         All data inside should be sorted from lowest-highest
@@ -27,7 +27,7 @@ class Chart:
         if self.dataType == DataType.SCAM_ALERT_STORIES or self.dataType == DataType.SCAM_ALERT_NEWS:
             self._PlotDates()
             return True
-        elif self.dataType == DataType.DETAILED_SCAM_ALERT_STORIES or self.dataType == DataType.DETAILED_SCAM_ALERT_NEWS:
+        elif self.dataType == DataType.DETAILED_SCAM_ALERT_STORIES or self.dataType == DataType.DETAILED_SCAM_ALERT_NEWS or DataType.MERGED_DATA:
             self._PlotDetailedData()
             return True
         return False
@@ -74,9 +74,15 @@ class Chart:
             if filter != None:
                 if filter(data):
                     continue
-            toCount = data[key]
+
+            toCount = None
+            if key in data:
+                toCount = data[key]
             if toCount != None:
                 dataPoints.AppendData(toCount)
+
+        if dataPoints.Size() == 0:
+            return None
 
         pieChart = PieChart(fileName.replace("_", " "), dataPoints, showLabels=showLabel)
         filePath = os.path.join(self.savePath, fileName + ".png")
@@ -105,9 +111,15 @@ class Chart:
             if filter != None:
                 if filter(data):
                     continue
-            date = data["Dates"]
+
+            date = None
+            if "Dates" in data:
+                date = data["Dates"]
             if date != None:
                 dataPoints.AppendData(date)
+
+        if dataPoints.Size() == 0:
+            return None
 
         lineChart = LineChart(fileName.replace("_", " "), dataPoints)
         filePath = os.path.join(self.savePath, fileName + ".png")
@@ -136,10 +148,15 @@ class Chart:
             if filter != None:
                 if filter(data):
                     continue
-            date = data["Dates"]
+
+            date = None
+            if "Dates" in data:
+                date = data["Dates"]
             if date != None:
                 dataPoints.AppendData(date)
 
+        if dataPoints.Size() == 0:
+            return None
 
         lineChart = LineChart(fileName.replace("_", " "), dataPoints)
         filePath = os.path.join(self.savePath, fileName + ".png")
@@ -147,8 +164,8 @@ class Chart:
 
     def _GetRawDateValue(data):
         dateStr = data["Dates"].split(" ")
+
         year = int(dateStr[2])
         month = MonthStrToInt(dateStr[1])
         day = int(dateStr[0])
-
         return (year * 12 * 30) + (month * 30) + day

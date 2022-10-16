@@ -27,7 +27,7 @@ class DataVisualizationModel:
             return
 
         dataAnalyzer = Analyzer(filePath, self, thread)
-        figurePath = dataAnalyzer.AnalyzeData()
+        figurePath = dataAnalyzer.PlotData()
 
         if thread != None:
             # Thread ended due to signal stop. So we return none

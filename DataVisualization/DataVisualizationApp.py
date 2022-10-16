@@ -3,17 +3,19 @@ from Core.Async.AppTaskManager import AppTaskManager
 from Core.Async.TaskThread import TaskThread
 
 from DataVisualization.View.DataVisualizationView import *
-
+from DataVisualization.View.DataMergerView import *
+from DataVisualization.ViewModel.DataMergerViewModel import DataMergerViewModel
 from DataVisualization.ViewModel.DataVisualizationViewModel import *
 
 
 class DataVisualizationApp:
     def __init__(self, mainAsyncLoop) -> None:
-        self.window = sg.Window(title="Data Visualization", layout=DataVisualizationApp.CreateLayout(self),
+        self.window = sg.Window(title="Data Visualization", layout=DataVisualizationApp.CreateLayout(),
                                 margins=(0, 0))
         self.isOpen = True
         self.viewModels = [
             DataVisualizationViewModel(self),
+            DataMergerViewModel(self)
         ]
         self.asyncLoop = mainAsyncLoop
         self.asyncTaskManager = AppTaskManager(self)
@@ -43,9 +45,18 @@ class DataVisualizationApp:
     def CloseApp(self):
         self.isOpen = False
 
-    def CreateLayout(self):
+    def CreateLayout():
         # NOTE: App View
-        return CreateVisualizationViewLayout()
+        APP_TAB_GROUP = sg.TabGroup(
+            [[
+                sg.Tab("Analyze", CreateVisualizationViewLayout()),
+                sg.Tab("Merger", CreateMergerViewLayout())
+            ]]
+        )
+
+        return [
+            [APP_TAB_GROUP]
+        ]
 
     def TryAddTask(self, task: TaskThread) -> bool:
         """

@@ -16,3 +16,25 @@ class WeightMap:
                 result = weight
                 currHighest = self._weights[weight]
         return result
+
+    def GetHighestInRange(self, range: float) -> list:
+        """
+        Return list of weights within the range of the highest weight.
+        """
+        sortedWeights = {key: val for key, val in sorted(self._weights.items(), key = lambda ele: ele[1], reverse = True)}
+
+        result = []
+        currHighest = 0.0
+        highest = None
+        for weight in sortedWeights:
+            if highest == None:
+                highest = weight
+                currHighest = self._weights[weight]
+                result.append(highest)
+                continue
+
+            if self._weights[weight] + range >= currHighest:
+                result.append(highest)
+            else:
+                break
+        return result

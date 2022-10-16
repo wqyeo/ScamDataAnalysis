@@ -24,15 +24,15 @@ class Chart:
     def Plot(self) -> bool:
         CreateToPath(self.savePath)
 
-        if self.dataType == DataType.SCAM_ALERT_STORIES:
-            self._PlotScamAlertStories()
+        if self.dataType == DataType.SCAM_ALERT_STORIES or self.dataType == DataType.SCAM_ALERT_NEWS:
+            self._PlotDates()
             return True
-        elif self.dataType == DataType.DETAILED_SCAM_ALERT_STORIES:
-            self._PlotDetailedScamAlertStories()
+        elif self.dataType == DataType.DETAILED_SCAM_ALERT_STORIES or self.dataType == DataType.DETAILED_SCAM_ALERT_NEWS:
+            self._PlotDetailedData()
             return True
         return False
 
-    def _PlotScamAlertStories(self) -> None:
+    def _PlotDates(self) -> None:
         self._PlotScamOverTime("Scam_Over_Time")
         #self._PlotScamByDates("Scam_By_Date")
 
@@ -43,7 +43,7 @@ class Chart:
             self._PlotScamOverTime("Scam_Over_Time_" + str(year), YearFilter)
             #self._PlotScamByDates("Scam_By_Date_" + str(year), YearFilter)
 
-    def _PlotDetailedScamAlertStories(self) -> None:
+    def _PlotDetailedData(self) -> None:
         figSize = FigureSize(6, 6)
         legendConfig = LegendConfig(True)
         pieChartConfig = VisualChartConfig(figureSize=figSize, legendConfig=legendConfig)

@@ -4,16 +4,18 @@ from Core.Async.TaskThread import TaskThread
 
 from DataVisualization.View.DataVisualizationView import *
 from DataVisualization.View.DataMergerView import *
+from DataVisualization.ViewModel.DataMergerViewModel import DataMergerViewModel
 from DataVisualization.ViewModel.DataVisualizationViewModel import *
 
 
 class DataVisualizationApp:
     def __init__(self, mainAsyncLoop) -> None:
-        self.window = sg.Window(title="Data Visualization", layout=DataVisualizationApp.CreateLayout(self),
+        self.window = sg.Window(title="Data Visualization", layout=DataVisualizationApp.CreateLayout(),
                                 margins=(0, 0))
         self.isOpen = True
         self.viewModels = [
             DataVisualizationViewModel(self),
+            DataMergerViewModel(self)
         ]
         self.asyncLoop = mainAsyncLoop
         self.asyncTaskManager = AppTaskManager(self)

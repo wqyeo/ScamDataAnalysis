@@ -33,6 +33,16 @@ class Analyzer:
                 chart = Chart(plotPath, data, dataType, self._thread)
                 plotted = chart.Plot()
             return plotted
+
+        def TrySaveData(savePath, data) -> bool:
+            try:
+                CreateToPath(savePath)
+                filePath = os.path.join(savePath, "analysis_data.json")
+                Database.SaveJsonData(data, filePath)
+                return True
+            except Exception as e:
+                Log("Save Analysis Data Failed", "Failed to save analyzed data, {}".format(getattr(e, 'message', repr(e))), LogSeverity.WARNING)
+                return False
 #endregion
 
         jsonData = None
@@ -54,7 +64,13 @@ class Analyzer:
             self._appModelRef.ShowUserMessage("")
             analyzeData = self._BundleDetailedScamAlertStories(jsonData)
 
+        if analyzeData == None:
+            Log("Data failed to Bundle", "Failed to bundle Data for file {}.".format(self.filePath), LogSeverity.WARNING)
+            return None
+
         chartPaths = os.path.join(self._outputPath, "charts")
+        TrySaveData(chartPaths, analyzeData)
+        
         if PlotData(analyzeData, dataType, chartPaths):
             figuresPath = []
             # Get all plot figures (.png)
@@ -140,14 +156,13 @@ class Analyzer:
 
         jsonData = jsonData["Stories"]
 
-        resultData = {
-            "Dates": []
-        }
+        resultData = []
 
         for data in jsonData:
+            currData = {}
             if "Date" in data:
-                dateStr = data["Date"]
-                resultData["Dates"].append(dateStr)
+                currData["Dates"] = data["Date"]
+                resultData.append(currData)
             else:
                 dumpPath = DumpInfo(json.dumps(data), LogSeverity.WARNING)
                 Log("Missing Data in given JSON", "Missing data in user given JSON, more Info at {}".format(dumpPath), LogSeverity.WARNING)

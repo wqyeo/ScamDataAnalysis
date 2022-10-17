@@ -21,22 +21,7 @@ class CrawlerModel:
             self._crawlingMessageCycle = 1
         self.viewModelRef.ShowUserMessage("Crawling" + ("." * self._crawlingMessageCycle))
 
-    @asyncio.coroutine
-    def CrawlAndSaveData(self, saveLocation: str, recursiveTimes: int, targetCrawlSite: str, taskThread = None):
-        """
-        Parameters
-        ------------------------------------------
-        ### Save Location
-        The target folder where the user want to save the data in.
-
-        ### Recursive Times
-        How many pages it will crawl through
-
-        ### Task Thread
-        Check Core.Async.TaskThread. Only use it when calling this as a thread.
-
-        """
-
+    def _DoCrawlAndSave(self, saveLocation: str, recursiveTimes: int, targetCrawlSite: str, taskThread = None):
 #region LocalFunction
         def FreeThread():
             nonlocal taskThread
@@ -64,7 +49,6 @@ class CrawlerModel:
                 listKey = "StoryList"
             return listKey
 #endregion
-
         # Check if Save Location exists
         invalidArgs = not IsValidDirectory(saveLocation)
         if invalidArgs:
@@ -84,6 +68,9 @@ class CrawlerModel:
             FreeThread()
             return None
 
+        if not ("Site" in crawlConfig and "Headers" in crawlConfig):
+            Log("Config missing keys", "CrawlConfig is missing keys", LogSeverity.WARNING)
+            return None
         crawlSite = crawlConfig["Site"]
         crawlSiteHeaders = crawlConfig["Headers"]
 
@@ -100,27 +87,43 @@ class CrawlerModel:
             
             self.viewModelRef.UpdateLoadingBar((pageNo / recursiveTimes) * 100)
 
-            crawlSiteHeaders["page"] = str(pageNo)
-            contentRaw = self._Crawl(crawlSite, crawlSiteHeaders)
+            if not ("page" in crawlSiteHeaders):
+                Log("Config missing keys", "CrawlConfig is missing keys of 'page'", LogSeverity.WARNING)
+                return None
 
             # Try to get the raw contents as an array.
             contentArray = None
             try:
+                crawlSiteHeaders["page"] = str(pageNo)
+                contentRaw = self._Crawl(crawlSite, crawlSiteHeaders)
+
                 listKey = GetContentListKey(crawlTarget)
                 contentArray = self._GetContentList(contentRaw, listKey)
             except:
-                infoFileName = DumpInfo(contentRaw, LogSeverity.WARNING)
-                message = "Error Fetching data at page: {pageNo}. More info at {fileName}.".format(pageNo=pageNo, fileName=infoFileName)
+                if contentRaw != None:
+                    infoFileName = DumpInfo(contentRaw, LogSeverity.WARNING)
+                    message = "Error Fetching data at page: {pageNo}. More info at {fileName}.".format(pageNo=pageNo, fileName=infoFileName)
+                else:
+                    message = "Error Fetching data at page: {pageNo}. No info was gathered as the crawl did not return any raw data.".format(pageNo=pageNo)
                 Log("Page Fetch Data", message, LogSeverity.WARNING)
                 continue
 
-            for content in contentArray:
-                # NOTE: Fixes some of the JSON file not ending with } properly.
-                if content[-1] != "}":
-                    content += "}"
+            if contentArray == None:
+                Log("None ContentArray", "ContentArray was None in CrawlerModel at page {pageNo}.".format(pageNo=pageNo), LogSeverity.WARNING)
+                continue
 
+            for content in contentArray:
+                if content == None:
+                    continue
+
+                content = content.strip()
+                if content == "":
+                    continue
                 # Try to read each content as JSON.
                 try:
+                    # NOTE: Attempts to fix some of the JSON file not ending with } properly.
+                    if content[-1] != "}":
+                        content += "}"
                     tempJson = json.loads(content)
                 except:
                     infoFileName = DumpInfo(content, LogSeverity.WARNING)
@@ -137,6 +140,31 @@ class CrawlerModel:
         self.viewModelRef.ShowUserMessage("Successfully saved under " + saveLocation)
         self.viewModelRef.UpdateLoadingBar(100)
         FreeThread()
+
+    @asyncio.coroutine
+    def CrawlAndSaveData(self, saveLocation: str, recursiveTimes: int, targetCrawlSite: str, taskThread = None):
+        """
+        Parameters
+        ------------------------------------------
+        ### Save Location
+        The target folder where the user want to save the data in.
+
+        ### Recursive Times
+        How many pages it will crawl through
+
+        ### Task Thread
+        Check Core.Async.TaskThread. Only use it when calling this as a thread.
+
+        """
+        try:
+            self._DoCrawlAndSave(saveLocation, recursiveTimes, targetCrawlSite, taskThread)
+        except Exception as e:
+            Log("Unhandled CrawlerModel Exception", "Unhandled exception, {}".format(getattr(e, 'message', repr(e))), LogSeverity.SEVERE)
+            self.viewModelRef.ShowUserMessage("Woops, a severe error occured! Check LogDump for more info.")
+        finally:
+            if taskThread != None:
+                taskThread.isRunning = False
+                self.viewModelRef.FreeAppThread()
 
     def _GenerateFileName(crawlTarget: CrawlTarget) -> str:
         # Crawl Type - Datetime - .json

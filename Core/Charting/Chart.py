@@ -36,7 +36,7 @@ class Chart:
         self._PlotScamOverTime("Scam_Over_Time")
         #self._PlotScamByDates("Scam_By_Date")
 
-        for year in range(2018, 2023):
+        for year in range(2019, 2023):
             def YearFilter(data):
                 return Chart._GetRawDateValue(data) < (year * 12 * 30) or Chart._GetRawDateValue(data) > ((year + 1) * 12 * 30)
 
@@ -48,7 +48,7 @@ class Chart:
         legendConfig = LegendConfig(True)
         pieChartConfig = VisualChartConfig(figureSize=figSize, legendConfig=legendConfig)
 
-        self._PlotScamOverTime("Scam_Over_Time")
+        self._PlotScamOverTime("Scam_Over_Time", filter= lambda d: Chart._GetRawDateValue(d) < (2019 * 12 * 30))
         #self._PlotScamByDates("Scam_By_Date")
         self._PlotCountablePieChart("ScamTypes", "Scam_Types_Occurance", pieChartConfig, showLabel=False)
         self._PlotCountablePieChart("PlatformTypes", "Scam_Target_Platforms", pieChartConfig, showLabel=False)
@@ -63,6 +63,25 @@ class Chart:
             self._PlotCountablePieChart("PlatformTypes", "Scam_Target_Platforms_" + str(year), pieChartConfig, YearFilter)
 
     def _PlotCountablePieChart(self, key: str, fileName: str, chartConfig: VisualChartConfig = None, filter = None, showLabel: bool = True):
+        """
+        Plot down a Pie Chart based on countable data.
+
+        ## Input
+        **key**
+        The key to use to access the data.
+
+        **fileName**
+        Output file name.
+
+        **chartConfig** (Optional)
+        Configurations for the shown chart.
+
+        **filter** (Optional)
+        A bool-function that gets function passed through it. Return True if you want the passed data to be ignored in the plotting.
+
+        **showLabel** (Optional)
+        True to show label in this pie chart.
+        """
         dataPoints = Data(DataCategory.COUNTABLES)
 
         for data in self.analyzedData:
@@ -89,6 +108,16 @@ class Chart:
         PlotChart(pieChart, filePath, chartConfig)
 
     def _PlotScamOverTime(self, fileName: str, filter = None):
+        """
+        Plot down a Line Chart based on scams over time.
+
+        ## Input
+        **fileName**
+        Output file name.
+
+        **filter** (Optional)
+        A bool-function that gets function passed through it. Return True if you want the passed data to be ignored in the plotting.
+        """
 #region Local_Function
         def GenerateConfiguration(data: Data) -> VisualChartConfig:
             intervals = -1
@@ -126,6 +155,16 @@ class Chart:
         PlotChart(lineChart, filePath, GenerateConfiguration(dataPoints))
 
     def _PlotScamByDates(self, fileName: str, filter = None):
+        """
+        Plot down a Line Chart based on scam by dates.
+
+        ## Input
+        **fileName**
+        Output file name.
+
+        **filter** (Optional)
+        A bool-function that gets function passed through it. Return True if you want the passed data to be ignored in the plotting.
+        """
 #region Local_Function
         def GenerateConfiguration(data: Data) -> VisualChartConfig:
             intervals = -1

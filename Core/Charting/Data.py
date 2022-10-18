@@ -7,11 +7,6 @@ from Core.Util import *
 
 class Data:
     def __init__(self, dataCategory: DataCategory):
-        """
-        **dataFilter**
-        A function that takes in data.
-        If true, the data will not be processed.
-        """
         self.dataCategory = dataCategory
         self.points = []
         

@@ -25,6 +25,8 @@ Run `Main.py`:
 python Main.py
 ```
 
+There are pre-crawled data for use under `SampleData` folder.
+
 ## Coding style
 
 Read [Coding_Style](https://github.com/wqyeo/ScamDataAnalysis/blob/main/Coding_Style.md).

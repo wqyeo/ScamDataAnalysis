@@ -168,14 +168,16 @@ class Analyzer:
                 currData["Dates"] = data["Date"]
 
             if "Description" in data:
-                platform = DeterminePlatform(data["Description"])
-                currData["PlatformTypes"] = platform
+                desc = data["Description"]
+                if desc != None:
+                    platform = DeterminePlatform(data["Description"])
+                    currData["PlatformTypes"] = platform
 
-                scamTypes = DetermineScamTypes(data["Description"])
-                currData["ScamTypes"] = scamTypes
+                    scamTypes = DetermineScamTypes(data["Description"])
+                    currData["ScamTypes"] = scamTypes
 
-                if platform == "Unknown":
-                    LogAndDump("Unknown Platform Detected", "Unknown platform detected for description.", data["Description"])
+                    if platform == "Unknown":
+                        LogAndDump("Unknown Platform Detected", "Unknown platform detected for description.", data["Description"])
 
             if currData["Dates"] == None or len(currData["ScamTypes"]) == 0 or currData["PlatformTypes"] == None:
                 warnMissingData = True

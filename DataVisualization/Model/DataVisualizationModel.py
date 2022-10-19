@@ -42,7 +42,7 @@ class DataVisualizationModel:
         try:
             self._DoAnalyze(filePath, thread)
         except Exception as e:
-            Log("Unhandled CrawlerModel Exception", "Unhandled exception, {}".format(getattr(e, 'message', repr(e))), LogSeverity.SEVERE)
+            Log("Unhandled DataVisualizationModel Exception", "Unhandled exception, {}".format(getattr(e, 'message', repr(e))), LogSeverity.SEVERE)
             self.viewModelRef.ShowUserMessage("Woops, a severe error occured! Check LogDump for more info.")
         finally:
             if thread != None:

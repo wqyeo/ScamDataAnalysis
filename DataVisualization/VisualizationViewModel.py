@@ -2,7 +2,7 @@ from Core.Util import GetFileNameFromPath
 
 class VisualizationViewModel:
     """
-    Used as a parent/abstract class to be
+    Used as a parent/abstract class to be inherited
     """
     def __init__(self, appRef, model, imageKey, userMessageKey, imageSelectionKey) -> None:
         self.appRef = appRef

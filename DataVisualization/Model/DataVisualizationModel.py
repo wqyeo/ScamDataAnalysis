@@ -35,9 +35,6 @@ class DataVisualizationModel:
     def AnalyzeData(self, filePath, thread: TaskThread = None):
         """
         Tries to analyze data based on the given file path
-
-        ## Output
-        List of paths to plot figure. None if invalid analysis. 
         """
         try:
             self._DoAnalyze(filePath, thread)

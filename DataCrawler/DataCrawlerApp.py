@@ -14,9 +14,9 @@ class DataCrawlerApp(WindowApp):
             CrawlerViewModel(self),
             DeepCrawlerViewModel(self) 
         ]
-        super().__init__(mainAsyncLoop, window, viewModels, DataCrawlerApp._OnAppCloseEvent)
+        super().__init__(mainAsyncLoop, window, viewModels)
 
-    def _OnAppCloseEvent(self) -> None:
+    def _OnAppCloseEvent(self) -> bool:
         choice = "Yes"
         self.asyncTaskManager.RemoveIdleTasks()
         if len(self.asyncTaskManager.currentTasks) > 0:
@@ -29,7 +29,8 @@ class DataCrawlerApp(WindowApp):
         if choice == "Yes":
             self.asyncTaskManager.EndAllTask()
             self.CloseApp()
-            return None
+            return True
+        return False
 
     def _CreateLayout():
         # NOTE: App View

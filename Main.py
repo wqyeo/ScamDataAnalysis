@@ -2,7 +2,7 @@ from asyncio import AbstractEventLoop
 import PySimpleGUI as sg
 
 from Core.Async.AsyncThread import *
-from DataCrawler.DataCrawlerApp import DataCrawlerApp
+from DataCrawler.DataCrawlerApp import *
 from DataVisualization.DataVisualizationApp import DataVisualizationApp
 
 

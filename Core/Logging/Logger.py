@@ -9,6 +9,9 @@ from Core.Logging.LogMessage import LogMessage
 from Core.Logging.LogSeverity import LogSeverity
 
 def SetupDirectory():
+    """
+    Create output directory for logging.
+    """
     if not os.path.exists('LogDump'):
         os.mkdir('LogDump')
 
@@ -59,6 +62,9 @@ def Log(title:str, message:str, severity:LogSeverity=LogSeverity.LOG) -> None:
     Log(logMessage)
 
 def LogAndDump(title: str, message: str, info: str, severity: LogSeverity = LogSeverity.LOG) -> None:
+    """
+    Same as calling Dump() and Log()
+    """
     path = DumpInfo(info, severity)
     message += "More Info at: {}".format(path)
     Log(title, message, severity)

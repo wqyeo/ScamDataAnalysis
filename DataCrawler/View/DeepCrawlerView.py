@@ -9,7 +9,7 @@ LOADING_BAR_KEY = "DEEP_LOADING_BAR_KEY"
 #endregion
 
 #region NOTE: Events (Button names, etc)
-START_CRAWL = "Deep Crawl"
+START_CRAWL_EVENT = "Deep Crawl"
 #endregion 
 
 def CreateDeepCrawlerViewLayout():
@@ -24,6 +24,6 @@ def CreateDeepCrawlerViewLayout():
         [sg.Column(_CRAWL_DATA_SELECTION)],
         [sg.HorizontalSeparator()],
         [sg.Text("", key=CRAWLER_USER_LOG_KEY)],
-        [sg.Button(START_CRAWL)],
+        [sg.Button(START_CRAWL_EVENT)],
         [sg.ProgressBar(max_value= 100,  key = LOADING_BAR_KEY, orientation="h", size=(20, 20))]
     ]

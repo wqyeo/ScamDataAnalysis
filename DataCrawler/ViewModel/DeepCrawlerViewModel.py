@@ -1,21 +1,19 @@
 import asyncio
 
-import PySimpleGUI as sg
-
 from Core.Async.TaskThread import TaskThread
+from DataCrawler.CrawlViewModel import CrawlViewModel
 from DataCrawler.View.DeepCrawlerView import *
 from DataCrawler.Model.DeepCrawlerModel import *
 
 DEEP_CRAWL_TASK_NAME = "DETAILED_SCAMALERT_STORIES_CRAWL_TASK"
 
-class DeepCrawlerViewModel:
+class DeepCrawlerViewModel(CrawlViewModel):
     def __init__(self, appRef) -> None:
-        self.appRef = appRef
-        self.model = DeepCrawlerModel(self)
-        pass
+        model = DeepCrawlerModel(self)
+        super().__init__(appRef, model, CRAWLER_USER_LOG_KEY, LOADING_BAR_KEY)
 
     def Update(self, event, value) -> None:
-        if event == START_CRAWL:
+        if event == START_CRAWL_EVENT:
             self.StartCrawl(self.appRef.window) 
 
     def StartCrawl(self, window) -> None:
@@ -28,16 +26,3 @@ class DeepCrawlerViewModel:
         
         asyncio.run_coroutine_threadsafe(self.model.CrawlAndSaveData(filePath, newThread), self.appRef.asyncLoop)
         self.ShowUserMessage("Crawling...")
-
-    def ShowUserMessage(self, message) -> None:
-        """
-        Show a message to the user.
-        (Commonly used to show error or log.)
-        """
-        self.appRef.window[CRAWLER_USER_LOG_KEY].update(message)
-
-    def UpdateLoadingBar(self, percentValue: int) -> None:
-        self.appRef.window[LOADING_BAR_KEY].update(percentValue)
-
-    def FreeAppThread(self):
-        self.appRef.asyncTaskManager.RemoveIdleTasks()

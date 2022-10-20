@@ -45,6 +45,9 @@ def _GetWeightMap(description: str, searchMap: dict) -> WeightMap:
     return weightMap
 
 def DeterminePlatform(description: str) -> str:
+    """
+    Determine the platform the scam was conducted on from the description.
+    """
     weightMap = _GetWeightMap(description, PLATFORM_SEARCH_MAPPING)
 
     # Find keyword with highest weight.

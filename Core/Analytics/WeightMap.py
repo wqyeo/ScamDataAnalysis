@@ -1,4 +1,7 @@
 class WeightMap:
+    """
+    Represents a non-balanced dummy weightmap
+    """
     def __init__(self) -> None:
         self._weights = {}
 

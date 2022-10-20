@@ -1,20 +1,19 @@
 import asyncio
 
-import PySimpleGUI as sg
-
 from Core.Async.TaskThread import TaskThread
 from DataCrawler.View.CrawlerView import *
 from DataCrawler.Model.CrawlerModel import CrawlerModel
+from DataCrawler.CrawlViewModel import CrawlViewModel
 
 CRAWL_TASK_THREAD = "SCAM_ALERT_STORIES_CRAWL_TASK"
 
-class CrawlerViewModel:
+class CrawlerViewModel(CrawlViewModel):
     def __init__(self, appRef) -> None:
-        self.appRef = appRef
-        self.model = CrawlerModel(self)
+        model = CrawlerModel(self)
+        super().__init__(appRef, model, CRAWLER_USER_LOG_KEY, LOADING_BAR_KEY)
 
     def Update(self, event, value) -> None:
-        if event == START_CRAWL:
+        if event == START_CRAWL_EVENT:
             self.StartCrawl(self.appRef.window)
 
     def StartCrawl(self, window) -> None:
@@ -29,16 +28,3 @@ class CrawlerViewModel:
         recursiveNum = window[RECURSIVE_CRAWL_TIMES_KEY].get()
         targetSite = window[TARGET_CRAWL_SITE_KEY].get()
         asyncio.run_coroutine_threadsafe(self.model.CrawlAndSaveData(filePath, recursiveNum, targetSite, taskThread=newThread), self.appRef.asyncLoop)
-
-    def ShowUserMessage(self, message) -> None:
-        """
-        Show a message to the user.
-        (Commonly used to show error or log.)
-        """
-        self.appRef.window[CRAWLER_USER_LOG_KEY].update(message)
-
-    def UpdateLoadingBar(self, percentValue: int) -> None:
-        self.appRef.window[LOADING_BAR_KEY].update(percentValue)
-
-    def FreeAppThread(self):
-        self.appRef.asyncTaskManager.RemoveIdleTasks()

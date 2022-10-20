@@ -17,14 +17,14 @@ LOADING_BAR_KEY = "LOADING_BAR_KEY"
 #endregion
 
 #region NOTE: Events (Button names, etc)
-START_CRAWL = "Crawl Site"
+START_CRAWL_EVENT = "Crawl Site"
 #endregion 
 
 def CreateCrawlerViewLayout():
     # NOTE: Minor layouts to be merged together to form the full layout
     _CRAWL_SITE_SELECTOR = [sg.Text("Select Site to Crawl: "), sg.Combo(_CRAWL_SITE_OPTIONS, key= TARGET_CRAWL_SITE_KEY, readonly= True, default_value=_CRAWL_SITE_OPTIONS[0])]
 
-    _RECURSIVE_CRAWL_SELECTOR = [sg.Text('No of pages to crawl through: '), sg.Spin([i for i in range(1,101)], initial_value=60, key=RECURSIVE_CRAWL_TIMES_KEY, readonly=True)]
+    _RECURSIVE_CRAWL_SELECTOR = [sg.Text('No of pages to crawl through: '), sg.Spin([i for i in range(1,101)], initial_value=80, key=RECURSIVE_CRAWL_TIMES_KEY, readonly=True)]
 
     _SAVE_DESTINATION_SELECTION =[
         [sg.Text("Target Folder (data will be saved here): ")],
@@ -38,6 +38,6 @@ def CreateCrawlerViewLayout():
         [sg.Column(_SAVE_DESTINATION_SELECTION)],
         [sg.HorizontalSeparator()],
         [sg.Text("", key=CRAWLER_USER_LOG_KEY)],
-        [sg.Button(START_CRAWL)],
+        [sg.Button(START_CRAWL_EVENT)],
         [sg.ProgressBar(max_value= 100,  key = LOADING_BAR_KEY, orientation="h", size=(20, 20))]
     ]

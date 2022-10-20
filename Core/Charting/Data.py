@@ -6,7 +6,11 @@ from Core.Logging.Logger import *
 from Core.Util import *
 
 class Data:
+    """
+    Represents a bunch of points in the chart.
+    """
     def __init__(self, dataCategory: DataCategory):
+        
         self.dataCategory = dataCategory
         self.points = []
         

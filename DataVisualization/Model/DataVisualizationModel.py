@@ -35,14 +35,11 @@ class DataVisualizationModel:
     def AnalyzeData(self, filePath, thread: TaskThread = None):
         """
         Tries to analyze data based on the given file path
-
-        ## Output
-        List of paths to plot figure. None if invalid analysis. 
         """
         try:
             self._DoAnalyze(filePath, thread)
         except Exception as e:
-            Log("Unhandled CrawlerModel Exception", "Unhandled exception, {}".format(getattr(e, 'message', repr(e))), LogSeverity.SEVERE)
+            Log("Unhandled DataVisualizationModel Exception", "Unhandled exception, {}".format(getattr(e, 'message', repr(e))), LogSeverity.SEVERE)
             self.viewModelRef.ShowUserMessage("Woops, a severe error occured! Check LogDump for more info.")
         finally:
             if thread != None:

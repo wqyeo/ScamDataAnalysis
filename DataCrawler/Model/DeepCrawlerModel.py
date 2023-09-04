@@ -97,8 +97,7 @@ class DeepCrawlerModel:
                 self.viewModelRef.ShowUserMessage("Failed to save crawled Data!")
         FreeThread()
 
-    @asyncio.coroutine
-    def CrawlAndSaveData(self, targetDataPath: str, taskThread = None):
+    async def CrawlAndSaveData(self, targetDataPath: str, taskThread = None):
         """
         Parameters
         ------------------------------------------

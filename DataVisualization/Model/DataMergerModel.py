@@ -104,8 +104,7 @@ class DataMergerModel:
             
         self.viewModelRef.SetFigurePaths(figurePath)
 
-    @asyncio.coroutine
-    def MergeData(self, firstFilePath: str, secondFilePath: str, thread: TaskThread = None):
+    async def MergeData(self, firstFilePath: str, secondFilePath: str, thread: TaskThread = None):
         """
         Tries to analyze data based on the given file path
 

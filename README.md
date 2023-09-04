@@ -9,6 +9,8 @@ Our project pinpoint on analyzing the trend and scam behavior as well as underst
 
 Ensure that you are using Python3.
 
+> **NOTE:** Last Tested with Python3 version `3.11.2`.
+
 ### Installing Modules
 
 Open Command Prompt (or Terminal if Linux), `cd` to the directory which this project is at.

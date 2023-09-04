@@ -141,8 +141,7 @@ class CrawlerModel:
         self.viewModelRef.UpdateLoadingBar(100)
         FreeThread()
 
-    @asyncio.coroutine
-    def CrawlAndSaveData(self, saveLocation: str, recursiveTimes: int, targetCrawlSite: str, taskThread = None):
+    async def CrawlAndSaveData(self, saveLocation: str, recursiveTimes: int, targetCrawlSite: str, taskThread = None):
         """
         Parameters
         ------------------------------------------

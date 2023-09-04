@@ -31,8 +31,7 @@ class DataVisualizationModel:
             
         self.viewModelRef.SetFigurePaths(figurePath)
         
-    @asyncio.coroutine
-    def AnalyzeData(self, filePath, thread: TaskThread = None):
+    async def AnalyzeData(self, filePath, thread: TaskThread = None):
         """
         Tries to analyze data based on the given file path
         """
